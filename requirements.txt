@@ -1,0 +1,3 @@
+requests_futures
+pytelegrambotapi
+gunicorn
