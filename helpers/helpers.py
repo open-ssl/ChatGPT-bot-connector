@@ -1,4 +1,9 @@
 import sys
+from telebot import types
+
+import bot_config
+from bot_config import cache_client
+from functools import partial
 from time import sleep
 from traceback import print_exception
 from requests_futures import sessions
@@ -6,6 +11,11 @@ from requests_futures import sessions
 
 class Const:
     pass
+
+
+class CachePhase:
+    DEFAULT_DIALOG = 0
+    WRITE_TEXT_FOR_GPT = 1
 
 
 class BotMessage:
@@ -16,6 +26,9 @@ class BotMessage:
     HELP = 'Помощь'
     ABOUT = 'О боте'
     MENU = 'Главное меню'
+    START_BOT = 'Запустить'
+    SHARE_BOT = 'Поделиться'
+    EARN_WITH_CHATGPT = 'Заработай с ботом'
 
 
 class BotCommands:
@@ -23,9 +36,18 @@ class BotCommands:
     Команды бота
     """
     START = 'start'
+    START_BOT = 'start_bot'
+    SHARE_BOT = 'share_bot'
+    EARN_WITH_CHATGPT = 'earn_with_chatgpt'
     HELP = 'help'
     ABOUT = 'about'
     MENU = 'menu'
+
+    START_DESCRIPTION = 'Start main bot'
+    START_BOT_DESCRIPTION = 'Start dialog with ChatGPT'
+    ABOUT_DESCRIPTION = 'Learn about bot'
+    HELP_DESCRIPTION = 'Get help info'
+
 
     @classmethod
     def get_bot_commands(cls):
@@ -34,6 +56,14 @@ class BotCommands:
             cls.HELP: BotMessage.HELP,
             cls.ABOUT: BotMessage.ABOUT,
             cls.MENU: BotMessage.MENU,
+        }
+
+    @classmethod
+    def get_menu_commands(cls):
+        return {
+            cls.START: BotMessage.START_BOT,
+            cls.SHARE_BOT: BotMessage.SHARE_BOT,
+            cls.EARN_WITH_CHATGPT: BotMessage.EARN_WITH_CHATGPT,
         }
 
 
@@ -67,3 +97,38 @@ def post_request(url, json_data):
             sleep(0.5)
 
     return request_result.result()
+
+
+def get_main_menu_keyboard():
+    """
+    Генерация клавиатуры главного меню
+    :return: Обьект клавиатуры для вставки в реплай сообщения
+    """
+    keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+    bot_commands = BotCommands.get_menu_commands()
+    for command_text in bot_commands.values():
+        keyboard_button = partial(types.KeyboardButton, text=command_text)
+        keyboard.add(keyboard_button())
+    return keyboard
+
+
+def initialize_main_menu():
+    bot = bot_config.bot
+    bot.set_my_commands(commands=[
+        types.BotCommand(BotCommands.START, BotCommands.START_DESCRIPTION),
+        types.BotCommand(BotCommands.START_BOT, BotCommands.START_BOT_DESCRIPTION),
+        types.BotCommand(BotCommands.ABOUT, BotCommands.ABOUT_DESCRIPTION),
+        types.BotCommand(BotCommands.HELP, BotCommands.HELP_DESCRIPTION),
+    ])
+    bot.set_chat_menu_button(menu_button=types.MenuButtonCommands(type='commands'))
+    print("Initialized main menu")
+
+
+def start_command_validator(text):
+    return text.html_text == BotMessage.START_BOT
+
+
+def unknown_command_validator(message):
+    chat_id = message.chat.id
+    command_phase = cache_client.get(str(chat_id))
+    return not command_phase or command_phase == b'0'
