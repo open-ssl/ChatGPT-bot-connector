@@ -4,7 +4,9 @@ from random import choice
 from string import ascii_uppercase
 from functools import partial
 
-from bot_config import bot, cache_client
+import openai
+from bot_config import bot, cache_client, CHAT_GPT_MODEL_NAME, KEY_LIST
+from random import randint
 from helpers import helpers
 from helpers.helpers import (
     Const,
@@ -60,8 +62,30 @@ def answer_user_after_request(message):
     return bot.send_message(chat_id, "Ждем ответа от Chat GPT")
 
 
+def test_chat_gpt_dialog():
+    request_text = 'Please come up with five names for the grocery store'
+    # real_response = openai.Completion.create(
+    #     api_key=get_random_api_key(),
+    #     organization='org-j49bIGhFvzZ8qLOBajUzv5i0',
+    #     model=CHAT_GPT_MODEL_NAME,
+    #     prompt=request_text,
+    #     max_tokens=100,
+    #     temperature=0.6
+    # )
+    # sample_text = '\n\n1. Fresh Groceries\n2. Green Markets\n3. Supermarket Express\n4. Corner Pantry\n5. The Grocery Cart'
+    # text = response.choices[0].text
+    pass
+
+
+def get_random_api_key():
+    'gpt-3.5-turbo'
+    key_index = randint(0, len(KEY_LIST) - 1)
+    return KEY_LIST[key_index]
+
+
 if __name__ == '__main__':
     print("Bot started")
-    helpers.initialize_main_menu()
-    bot.polling(none_stop=True)
+    # helpers.initialize_main_menu()
+    # bot.polling(none_stop=True)
+    test_chat_gpt_dialog()
     print("Bot finished")
