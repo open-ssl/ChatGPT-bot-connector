@@ -1,5 +1,7 @@
 import telebot
 from pymemcache.client import base
+from googletrans import Translator
+
 BOT_API_TOKEN = ""
 # CHAT_GPT_MODEL_NAME = "text-davinci-003"
 CHAT_GPT_MODEL_NAME = 'gpt-3.5-turbo'
@@ -18,6 +20,7 @@ KEY_LIST = []
 
 cache_client = base.Client(('localhost', 11211))
 bot = telebot.TeleBot(BOT_API_TOKEN)
+translator = Translator()
 
 #
 # {

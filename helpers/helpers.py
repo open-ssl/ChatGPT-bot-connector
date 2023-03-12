@@ -9,6 +9,11 @@ from traceback import print_exception
 from requests_futures import sessions
 
 
+class Locale:
+    ENGLISH = 'en'
+    RUSSIAN = 'ru'
+
+
 class Const:
     pass
 
@@ -22,14 +27,22 @@ class BotMessage:
     """
     Тексты сообщений при нажатии на команды
     """
-    START = 'Hi, {}!\nUse possibilities of ChatGPT in Telegram'
+    START_TEXT = 'Hi, {}!\nUse possibilities of ChatGPT in Telegram'
+    MAIN_MENU_TEXT = 'Редактируйте свой профиль или начните диалог с ботом'
     HELP = 'Помощь'
     ABOUT = 'О боте'
-    MENU = 'Главное меню'
     START_BOT = 'Начать диалог c Сhat GPT'
-    SHARE_BOT = 'Поделиться'
+    PROFILE = 'Мой профиль'
     MAIN_MENU = 'Главное меню'
     EARN_WITH_CHATGPT = 'Заработай с ботом'
+
+    @classmethod
+    def get_unique_methods(cls):
+        """
+        Возвращает уникальные методы, которые не нужно распознаавть как неизвестные команды
+        :return:
+        """
+        return [BotMessage.MAIN_MENU]
 
 
 class BotCommands:
@@ -39,32 +52,21 @@ class BotCommands:
     START = 'start'
     START_BOT = 'start_bot'
     MAIN_MENU = 'main_menu'
-    SHARE_BOT = 'share_bot'
+    PROFILE = 'my_profile'
     EARN_WITH_CHATGPT = 'earn_with_chatgpt'
     HELP = 'help'
     ABOUT = 'about'
-    MENU = 'menu'
 
     START_DESCRIPTION = 'Start main bot'
     START_BOT_DESCRIPTION = 'Start dialog with ChatGPT'
     ABOUT_DESCRIPTION = 'Learn about bot'
     HELP_DESCRIPTION = 'Get help info'
 
-
-    @classmethod
-    def get_bot_commands(cls):
-        return {
-            cls.START: BotMessage.START,
-            cls.HELP: BotMessage.HELP,
-            cls.ABOUT: BotMessage.ABOUT,
-            cls.MENU: BotMessage.MENU,
-        }
-
     @classmethod
     def get_menu_commands(cls):
         return {
             cls.START: BotMessage.START_BOT,
-            cls.SHARE_BOT: BotMessage.SHARE_BOT,
+            cls.PROFILE: BotMessage.PROFILE,
             cls.EARN_WITH_CHATGPT: BotMessage.EARN_WITH_CHATGPT,
         }
 
@@ -88,6 +90,24 @@ def log_error_in_file():
         print(e)
     finally:
         print('end log error')
+
+
+def get_locale_for_user(user_id: int) -> str:
+    """
+    Получаем локаль для пользователя
+    :param user_id: идентификатор пользователя
+    :return: локаль для работы с ботом
+    """
+    return Locale.ENGLISH
+
+
+def set_locale_for_user(user_id: int) -> None:
+    """
+    Установка локали пользователя для работы с ботом
+    :param user_id: идентификатор пользователя
+    """
+    pass
+    return
 
 
 def get_session_for_request():
@@ -146,7 +166,17 @@ def initialize_main_menu():
     print("Initialized main menu")
 
 
-def start_bot_command_validator(text):
+def main_menu_bot_command_validator(text) -> bool:
+    """
+    Проверка сообщения на принадлежность к команде /start
+    Директ в главное меню
+    :param text: обьект сообщения
+    :return: bool - ожидаем команду start?
+    """
+    return text.html_text in BotMessage.get_unique_methods()
+
+
+def start_bot_command_validator(text) -> bool:
     """
     Проверка сообщения на принадлежность к команде /start_bot
     :param text: обьект сообщения
@@ -155,7 +185,23 @@ def start_bot_command_validator(text):
     return text.html_text in [BotMessage.START_BOT, f'/{BotCommands.START_BOT}']
 
 
-def unknown_command_validator(message):
+def write_chat_gpt_command_validator(message) -> bool:
+    """
+    Проверка того, что мы находимся в режиме написания Chat GPT
+    """
     chat_id = message.chat.id
     command_phase = cache_client.get(str(chat_id))
-    return not command_phase or command_phase == b'0'
+    return command_phase and command_phase == b'1'
+
+
+def unknown_command_validator(message) -> bool:
+    """
+    Проверка сообщения, на несоответствие какой-либо команде,
+    если находимся не в режиме написанию боту
+    :param message: обьект сообщения
+    :return: bool - сообщение является командой?
+    """
+    chat_id = message.chat.id
+    command = message.html_text
+    command_phase = cache_client.get(str(chat_id))
+    return not command_phase or command_phase == b'0' and command not in BotMessage.get_unique_methods()

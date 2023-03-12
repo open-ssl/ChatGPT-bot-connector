@@ -10,6 +10,7 @@ import openai
 from bot_config import bot, cache_client, CHAT_GPT_MODEL_NAME, KEY_LIST
 from random import randint
 from helpers import helpers
+from helpers.translator import convert_text
 from helpers.helpers import (
     Const,
     BotCommands,
@@ -24,15 +25,29 @@ from helpers.helpers import (
 @bot.message_handler(commands=['start'])
 def start_command(message):
     """
-    Показываем главное меню бота
+    Показываем стартовое меню бота
     :return: Отображаем кнопки Получить пробный, Купить подписку или Написать в поддержку
     Если это админ, то ему даем еще и кнопку админки
     """
     user_first_name = message.chat.first_name
-    start_message = helpers.BotMessage.START.format(user_first_name)
+    start_message = helpers.BotMessage.START_TEXT.format(user_first_name)
     keyboard = get_main_menu_keyboard()
 
     return bot.send_message(message.chat.id, start_message, reply_markup=keyboard)
+
+
+@bot.message_handler(func=helpers.main_menu_bot_command_validator)
+def show_main_menu_command(message):
+    """
+    Показываем главное меню бота после выхода из режима написания бота
+    :return:
+    """
+    chat_id = message.chat.id
+
+    cache_client.set(str(chat_id), helpers.CachePhase.DEFAULT_DIALOG)
+    result_message = helpers.BotMessage.MAIN_MENU_TEXT
+    keyboard = get_main_menu_keyboard()
+    return bot.send_message(message.chat.id, result_message, reply_markup=keyboard)
 
 
 @bot.message_handler(func=helpers.start_bot_command_validator)
@@ -50,19 +65,20 @@ def start_bot_command_handler(message):
 @bot.message_handler(func=helpers.unknown_command_validator)
 def unknown_command_handler(message):
     """
-    Нажали неизвестную команды
+    Нажали неизвестную команду не в режиме когда пишем боту
     :param message:
     :return:
     """
     keyboard = get_main_menu_keyboard()
+    # message.chat.id
     return bot.send_message(message.chat.id, "Не знаю такой команды\nПопробуйте ввести заново)", reply_markup=keyboard)
 
 
-@bot.message_handler()
+@bot.message_handler(func=helpers.write_chat_gpt_command_validator)
 def answer_user_after_request(message):
     chat_id = message.chat.id
-    cache_client.set(str(chat_id), helpers.CachePhase.DEFAULT_DIALOG)
     start_param = '=' * 5
+
     base_text = "\nЖдем ответа от Chat GPT\n"
     result_text = "Ответ от Chat GPT:\n\n"
     msg = bot.send_message(chat_id, start_param + base_text + start_param)
@@ -78,14 +94,13 @@ def answer_user_after_request(message):
     time.sleep(0.5)
     bot.edit_message_text(text=result_text, chat_id=chat_id, message_id=msg.message_id)
 
-    answer_from_chat_gpt = generate_answer_from_chat_gpt()
+    answer_from_chat_gpt = generate_answer_from_chat_gpt('Please come up with five names for the grocery store')
     keyboard = get_menu_after_write_keyboard()
-    return bot.send_message(chat_id, answer_from_chat_gpt, reply_markup=keyboard)
+    bot.send_message(chat_id, answer_from_chat_gpt)
+    return bot.send_message(chat_id, "Вы можете задать еще один вопрос прямо в этом диалоге\nЕсли хотите поменять настройки вы можете нажать кнопку \"Главное меню\"", reply_markup=keyboard)
 
 
-def generate_answer_from_chat_gpt():
-    request_text = 'Please come up with five names for the grocery store'
-    # text = response.choices[0].text
+def generate_answer_from_chat_gpt(request_text):
     return '\n\n1. Fresh Groceries\n2. Green Markets\n3. Supermarket Express\n4. Corner Pantry\n5. The Grocery Cart'
 
 
