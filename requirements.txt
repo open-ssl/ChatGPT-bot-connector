@@ -1,6 +1,10 @@
+fastapi[all]
 requests_futures
 pytelegrambotapi
 pymemcache
 gunicorn
 openai
+alembic
+sqlalchemy
+psycopg2-binary
 googletrans==4.0.0-rc1

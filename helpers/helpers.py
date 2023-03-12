@@ -110,6 +110,24 @@ def set_locale_for_user(user_id: int) -> None:
     return
 
 
+def decode_str(text: bytes) -> str:
+    """
+    Декодировать текст из байтов
+    :param text: байтовый текст
+    :return: декодированный текст
+    """
+    return text.decode()
+
+
+def encode_text(text: str) -> bytes:
+    """
+    Закодировать текст в байты
+    :param text: текст
+    :return: байтовый текст
+    """
+    return text.encode()
+
+
 def get_session_for_request():
     return sessions.FuturesSession()
 

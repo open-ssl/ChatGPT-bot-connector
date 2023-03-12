@@ -22,6 +22,8 @@ cache_client = base.Client(('localhost', 11211))
 bot = telebot.TeleBot(BOT_API_TOKEN)
 translator = Translator()
 
+
+# bot real answer
 #
 # {
 #   "choices": [
