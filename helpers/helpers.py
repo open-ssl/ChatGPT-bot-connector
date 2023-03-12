@@ -26,8 +26,9 @@ class BotMessage:
     HELP = 'Помощь'
     ABOUT = 'О боте'
     MENU = 'Главное меню'
-    START_BOT = 'Запустить'
+    START_BOT = 'Начать диалог c Сhat GPT'
     SHARE_BOT = 'Поделиться'
+    MAIN_MENU = 'Главное меню'
     EARN_WITH_CHATGPT = 'Заработай с ботом'
 
 
@@ -37,6 +38,7 @@ class BotCommands:
     """
     START = 'start'
     START_BOT = 'start_bot'
+    MAIN_MENU = 'main_menu'
     SHARE_BOT = 'share_bot'
     EARN_WITH_CHATGPT = 'earn_with_chatgpt'
     HELP = 'help'
@@ -63,6 +65,13 @@ class BotCommands:
         return {
             cls.START: BotMessage.START_BOT,
             cls.SHARE_BOT: BotMessage.SHARE_BOT,
+            cls.EARN_WITH_CHATGPT: BotMessage.EARN_WITH_CHATGPT,
+        }
+
+    @classmethod
+    def get_menu_after_dialog_commands(cls):
+        return {
+            cls.MAIN_MENU: BotMessage.MAIN_MENU,
             cls.EARN_WITH_CHATGPT: BotMessage.EARN_WITH_CHATGPT,
         }
 
@@ -112,6 +121,19 @@ def get_main_menu_keyboard():
     return keyboard
 
 
+def get_menu_after_write_keyboard():
+    """
+    Генерация клавиатуры c меню после отправки ChatGPT
+    :return: Обьект клавиатуры для вставки в реплай сообщения
+    """
+    keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+    bot_commands = BotCommands.get_menu_after_dialog_commands()
+    for command_text in bot_commands.values():
+        keyboard_button = partial(types.KeyboardButton, text=command_text)
+        keyboard.add(keyboard_button())
+    return keyboard
+
+
 def initialize_main_menu():
     bot = bot_config.bot
     bot.set_my_commands(commands=[
@@ -124,8 +146,13 @@ def initialize_main_menu():
     print("Initialized main menu")
 
 
-def start_command_validator(text):
-    return text.html_text == BotMessage.START_BOT
+def start_bot_command_validator(text):
+    """
+    Проверка сообщения на принадлежность к команде /start_bot
+    :param text: обьект сообщения
+    :return: bool - ожидаем команду start_bot?
+    """
+    return text.html_text in [BotMessage.START_BOT, f'/{BotCommands.START_BOT}']
 
 
 def unknown_command_validator(message):

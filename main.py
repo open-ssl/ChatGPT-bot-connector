@@ -1,3 +1,5 @@
+import time
+
 import telebot
 from telebot import types
 from random import choice
@@ -14,6 +16,7 @@ from helpers.helpers import (
     BotMessage,
     post_request,
     get_main_menu_keyboard,
+    get_menu_after_write_keyboard,
     log_error_in_file,
 )
 
@@ -32,7 +35,7 @@ def start_command(message):
     return bot.send_message(message.chat.id, start_message, reply_markup=keyboard)
 
 
-@bot.message_handler(func=helpers.start_command_validator)
+@bot.message_handler(func=helpers.start_bot_command_validator)
 def start_bot_command_handler(message):
     """
     Нажали на запуск бота
@@ -59,22 +62,31 @@ def unknown_command_handler(message):
 def answer_user_after_request(message):
     chat_id = message.chat.id
     cache_client.set(str(chat_id), helpers.CachePhase.DEFAULT_DIALOG)
-    return bot.send_message(chat_id, "Ждем ответа от Chat GPT")
+    start_param = '=' * 5
+    base_text = "\nЖдем ответа от Chat GPT\n"
+    result_text = "Ответ от Chat GPT:\n\n"
+    msg = bot.send_message(chat_id, start_param + base_text + start_param)
+    start_param += start_param
+    time.sleep(1)
+    bot.edit_message_text(text=start_param + base_text + start_param, chat_id=chat_id, message_id=msg.message_id)
+    start_param += start_param
+    time.sleep(1)
+    bot.edit_message_text(text=start_param + base_text + start_param, chat_id=chat_id, message_id=msg.message_id)
+    start_param += start_param
+    time.sleep(1)
+    bot.edit_message_text(text=start_param + base_text + start_param, chat_id=chat_id, message_id=msg.message_id)
+    time.sleep(0.5)
+    bot.edit_message_text(text=result_text, chat_id=chat_id, message_id=msg.message_id)
+
+    answer_from_chat_gpt = generate_answer_from_chat_gpt()
+    keyboard = get_menu_after_write_keyboard()
+    return bot.send_message(chat_id, answer_from_chat_gpt, reply_markup=keyboard)
 
 
-def test_chat_gpt_dialog():
+def generate_answer_from_chat_gpt():
     request_text = 'Please come up with five names for the grocery store'
-    # real_response = openai.Completion.create(
-    #     api_key=get_random_api_key(),
-    #     organization='org-j49bIGhFvzZ8qLOBajUzv5i0',
-    #     model=CHAT_GPT_MODEL_NAME,
-    #     prompt=request_text,
-    #     max_tokens=100,
-    #     temperature=0.6
-    # )
-    # sample_text = '\n\n1. Fresh Groceries\n2. Green Markets\n3. Supermarket Express\n4. Corner Pantry\n5. The Grocery Cart'
     # text = response.choices[0].text
-    pass
+    return '\n\n1. Fresh Groceries\n2. Green Markets\n3. Supermarket Express\n4. Corner Pantry\n5. The Grocery Cart'
 
 
 def get_random_api_key():
@@ -86,6 +98,6 @@ def get_random_api_key():
 if __name__ == '__main__':
     print("Bot started")
     # helpers.initialize_main_menu()
-    # bot.polling(none_stop=True)
-    test_chat_gpt_dialog()
+    bot.polling(none_stop=True)
+    # generate_answer_from_chat_gpt()
     print("Bot finished")
