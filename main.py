@@ -10,6 +10,7 @@ import openai
 from bot_config import bot, cache_client, CHAT_GPT_MODEL_NAME, KEY_LIST
 from random import randint
 from helpers import helpers
+from helpers import database
 from helpers.translator import convert_text
 from helpers.helpers import (
     Const,
