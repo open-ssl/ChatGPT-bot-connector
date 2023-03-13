@@ -11,6 +11,8 @@ from bot_config import bot, cache_client, CHAT_GPT_MODEL_NAME, KEY_LIST
 from random import randint
 from helpers import helpers
 from helpers import database
+from helpers import sql_templates
+from helpers.db_helpers import initialise_user_if_need
 from helpers.translator import convert_text
 from helpers.helpers import (
     Const,
@@ -30,6 +32,7 @@ def start_command(message):
     :return: Отображаем кнопки Получить пробный, Купить подписку или Написать в поддержку
     Если это админ, то ему даем еще и кнопку админки
     """
+    initialise_user_if_need(message)
     user_first_name = message.chat.first_name
     start_message = helpers.BotMessage.START_TEXT.format(user_first_name)
     keyboard = get_main_menu_keyboard()
@@ -109,6 +112,16 @@ def get_random_api_key():
     'gpt-3.5-turbo'
     key_index = randint(0, len(KEY_LIST) - 1)
     return KEY_LIST[key_index]
+
+
+def test_db_query():
+    """
+    Фунеция для тестирования запросов в БД
+    :return: результат запроса
+    """
+    query_result = database.fetch_data_from_db(sql_templates.CHECK_USER_IN_DB_TEMPLATE, 1, fetchall=False)
+    stas = '13'
+    return query_result[0]
 
 
 if __name__ == '__main__':

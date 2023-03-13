@@ -17,7 +17,7 @@ def get_db_session() -> psycopg2.connect:
     )
 
 
-def fetch_data_from_db(query_template, fetchall=True, *args):
+def fetch_data_from_db(query_template, *args, fetchall=True):
     """
     Безопасный запрос в базу данных на извлечение записей из выборки
     :param query_template: шаблон для запроса в БД
@@ -35,3 +35,19 @@ def fetch_data_from_db(query_template, fetchall=True, *args):
         if not fetchall:
             return cursor.fetchone()
         return cursor.fetchall()
+
+
+def insert_data_in_db(query_template, *args):
+    """
+    Безопасный запрос в базу данных на вставку записей из выборки
+    :param query_template: шаблон для запроса в БД
+    :param args: аргументы для вставки в шаблон запроса
+    :return: None
+    """
+    connection = get_db_session()
+    with connection as conn:
+        pass
+        cursor = conn.cursor()
+
+        query_template = query_template.format(*args)
+        cursor.execute(query_template)
