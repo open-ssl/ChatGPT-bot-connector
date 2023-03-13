@@ -23,7 +23,7 @@ sub_info = Table(
     Column("user_id", Integer, primary_key=True),
     Column("activity_status", Integer),
     Column("started_at", DateTime, nullable=False),
-    Column("expired_at", DateTime, nullable=False),
+    Column("expired_at", DateTime, nullable=True),
     Column("request_count", Integer, default=0),
     Column("tokens", Integer, default=50000),
 )
