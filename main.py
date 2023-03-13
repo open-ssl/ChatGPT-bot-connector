@@ -120,7 +120,6 @@ def test_db_query():
     :return: результат запроса
     """
     query_result = database.fetch_data_from_db(sql_templates.CHECK_USER_IN_DB_TEMPLATE, 1, fetchall=False)
-    stas = '13'
     return query_result[0]
 
 

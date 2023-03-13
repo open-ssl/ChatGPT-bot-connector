@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import (
-    MetaData, Column, Table, Integer, String, DateTime, TIMESTAMP, ForeignKey, JSON
+    MetaData, Column, Table, Integer, Float, String, DateTime
 )
 
 metadata = MetaData()
@@ -14,6 +14,7 @@ users = Table(
     Column("last_name", String, nullable=True),
     Column("username", String, nullable=True),
     Column("language", String),
+    Column("temperature", Float),
     Column("registered_at", DateTime),
 )
 

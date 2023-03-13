@@ -6,7 +6,12 @@ CHECK_USER_IN_DB_TEMPLATE = """
 
 INSERT_NEW_USER_IN_DB_TEMPLATE = """
     INSERT INTO users VALUES(
-    	{}, {}, {}, {}, {}, current_timestamp
+    	{}, {}, {}, {}, {}, current_timestamp, {}
     )
 """
 
+INSERT_NEW_SUB_INFO_IN_DB_TEMPLATE = """
+    INSERT INTO sub_info VALUES(
+    	{}, 0, current_timestamp, NULL, 0, 50000
+    )
+"""

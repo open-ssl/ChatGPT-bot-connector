@@ -16,7 +16,7 @@ class Locale:
 
 
 class Const:
-    pass
+    DEFAULT_TEMPERATURE_FOR_USER = 0.6
 
 
 class CachePhase:

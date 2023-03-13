@@ -1,5 +1,5 @@
 from helpers.database import fetch_data_from_db, insert_data_in_db
-from helpers.helpers import Locale, log_error_in_file
+from helpers.helpers import Const, Locale, log_error_in_file
 from helpers import sql_templates
 
 
@@ -11,7 +11,6 @@ def initialise_user_if_need(message_obj):
     :return: True - пользователь проверен
     """
     if not check_user_in_db(message_obj.chat.id):
-        # добавить инициализацию поля с токенами для пользователя
         create_new_user_in_db(message_obj)
 
     return bool('all checked')
@@ -28,6 +27,12 @@ def check_user_in_db(user_id: int) -> bool:
 
 
 def create_new_user_in_db(message) -> bool:
+    """
+    Добавление нового пользователя в таблицу пользователей
+    + Добавление стартовой информации о пользователе в таблицу информации по запросам в бота
+    :param message: обьект сообщения телеграма с данными о пользователе
+    :return: логический результат добавления пользователя
+    """
     operation_result = True
 
     user_id = message.chat.id
@@ -36,12 +41,14 @@ def create_new_user_in_db(message) -> bool:
     last_name = "\'{}\'".format(message.chat.last_name or '')
     username = "\'{}\'".format(message.chat.username or '')
     language = "\'{}\'".format(Locale.ENGLISH)
+    temperature = Const.DEFAULT_TEMPERATURE_FOR_USER
 
     try:
         insert_data_in_db(
             sql_templates.INSERT_NEW_USER_IN_DB_TEMPLATE,
-            user_id, first_name, last_name, username, language,
+            user_id, first_name, last_name, username, language, temperature
         )
+        insert_data_in_db(sql_templates.INSERT_NEW_SUB_INFO_IN_DB_TEMPLATE, user_id)
     except Exception as e:
         log_error_in_file()
         operation_result = False
