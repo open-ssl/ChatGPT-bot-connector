@@ -8,7 +8,8 @@ from functools import partial
 from time import sleep
 from traceback import print_exception
 from requests_futures import sessions
-from locales.ru.locale import BotMessage
+from locales.ru.locale import BotMessage as BotMessageRu
+from locales.en.locale import BotMessage as BotMessageEn
 from locales.main import get_unique_methods
 
 
@@ -68,18 +69,18 @@ class BotCommands:
     HELP_DESCRIPTION = 'Get help info'
 
     @classmethod
-    def get_menu_commands(cls):
+    def get_menu_commands(cls, locale_obj):
         return {
-            cls.START: BotMessage.START_BOT,
-            cls.PROFILE: BotMessage.PROFILE,
-            cls.EARN_WITH_CHATGPT: BotMessage.EARN_WITH_CHATGPT,
+            cls.START: locale_obj.START_BOT,
+            cls.PROFILE: locale_obj.PROFILE,
+            cls.EARN_WITH_CHATGPT: locale_obj.EARN_WITH_CHATGPT,
         }
 
     @classmethod
-    def get_menu_after_dialog_commands(cls):
+    def get_menu_after_dialog_commands(cls, locale_object):
         return {
-            cls.MAIN_MENU: BotMessage.MAIN_MENU,
-            cls.EARN_WITH_CHATGPT: BotMessage.EARN_WITH_CHATGPT,
+            cls.MAIN_MENU: locale_object.MAIN_MENU,
+            cls.EARN_WITH_CHATGPT: locale_object.EARN_WITH_CHATGPT,
         }
 
 
@@ -98,24 +99,6 @@ def log_error_in_file():
         print(e)
     finally:
         print('end log error')
-
-
-def get_locale_for_user(user_id: int) -> str:
-    """
-    Получаем локаль для пользователя
-    :param user_id: идентификатор пользователя
-    :return: локаль для работы с ботом
-    """
-    return Locale.ENGLISH
-
-
-def set_locale_for_user(user_id: int) -> None:
-    """
-    Установка локали пользователя для работы с ботом
-    :param user_id: идентификатор пользователя
-    """
-    pass
-    return
 
 
 def decode_str(text: bytes) -> str:
@@ -154,13 +137,13 @@ def post_request(url, json_data):
     return request_result.result()
 
 
-def get_main_menu_keyboard():
+def get_main_menu_keyboard(locale_obj):
     """
     Генерация клавиатуры главного меню
     :return: Обьект клавиатуры для вставки в реплай сообщения
     """
     keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-    bot_commands = BotCommands.get_menu_commands()
+    bot_commands = BotCommands.get_menu_commands(locale_obj=locale_obj)
     for command_text in bot_commands.values():
         keyboard_button = partial(types.KeyboardButton, text=command_text)
         keyboard.add(keyboard_button())
@@ -181,13 +164,13 @@ def get_profile_keyboard(profile_buttons: dict):
     return keyboard
 
 
-def get_menu_after_write_keyboard():
+def get_menu_after_write_keyboard(locale_object):
     """
     Генерация клавиатуры c меню после отправки ChatGPT
     :return: Обьект клавиатуры для вставки в реплай сообщения
     """
     keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-    bot_commands = BotCommands.get_menu_after_dialog_commands()
+    bot_commands = BotCommands.get_menu_after_dialog_commands(locale_object)
     for command_text in bot_commands.values():
         keyboard_button = partial(types.KeyboardButton, text=command_text)
         keyboard.add(keyboard_button())
@@ -222,7 +205,8 @@ def start_bot_command_validator(text) -> bool:
     :param text: обьект сообщения
     :return: bool - ожидаем команду start_bot?
     """
-    return text.html_text in [BotMessage.START_BOT, f'/{BotCommands.START_BOT}']
+
+    return text.html_text in [BotMessageRu.START_BOT, BotMessageEn.START_BOT, f'/{BotCommands.START_BOT}']
 
 
 def write_chat_gpt_command_validator(message) -> bool:
@@ -240,7 +224,7 @@ def my_profile_command_validator(text) -> bool:
     :param text: обьект сообщения
     :return: bool - ожидаем команду my_profile?
     """
-    return text.html_text in [BotMessage.PROFILE, f'/{BotCommands.PROFILE}']
+    return text.html_text in [BotMessageRu.PROFILE, BotMessageEn.PROFILE, f'/{BotCommands.PROFILE}']
 
 
 def unknown_command_validator(message) -> bool:

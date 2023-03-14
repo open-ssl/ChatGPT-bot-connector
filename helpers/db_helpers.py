@@ -2,7 +2,6 @@ from helpers.database import fetch_data_from_db, insert_data_in_db
 from helpers.helpers import (
     Const,
     BotCommands,
-    BotMessage,
     Locale,
     log_error_in_file
 )

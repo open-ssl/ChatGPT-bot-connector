@@ -14,6 +14,12 @@ class BotMessage:
     SAVE_PROFILE = 'Сохранить профиль'
     EARN_WITH_CHATGPT = 'Заработай с ботом'
     MY_PROFILE_TEXT = "Ваш профиль:"
+    TYPE_TEXT = "Введите текст запрос к Chat GPT по-английски"
+    WAITING_ANSWER_FROM_GPT = "\nЖдем ответа от Chat GPT\n"
+    ANSWER_FROM_GPT = "Ответ от Chat GPT:\n\n"
+    ANOTHER_QUESTION = "Вы можете задать еще один вопрос прямо в этом диалоге\n" \
+                       "Если хотите поменять настройки вы можете нажать кнопку \"Главное меню\""
+    UNKNOWN_COMMAND = "Не знаю такой команды\nПопробуйте ввести заново"
 
     @classmethod
     def get_unique_methods(cls):

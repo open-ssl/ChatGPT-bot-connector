@@ -19,7 +19,6 @@ from helpers.translator import convert_text
 from helpers.helpers import (
     Const,
     BotCommands,
-    BotMessage,
     post_request,
     get_main_menu_keyboard,
     get_menu_after_write_keyboard,
@@ -81,9 +80,11 @@ def start_command(message):
     Если это админ, то ему даем еще и кнопку админки
     """
     initialise_user_if_need(message)
+    chat_id = message.chat.id
+    locale_object = get_localisation_for_user(chat_id)
     user_first_name = message.chat.first_name
-    start_message = helpers.BotMessage.START_TEXT.format(user_first_name)
-    keyboard = get_main_menu_keyboard()
+    start_message = locale_object.START_TEXT.format(user_first_name)
+    keyboard = get_main_menu_keyboard(locale_object)
 
     return bot.send_message(message.chat.id, start_message, reply_markup=keyboard)
 
@@ -95,10 +96,11 @@ def show_main_menu_command(message):
     :return:
     """
     chat_id = message.chat.id
+    locale_object = get_localisation_for_user(chat_id)
 
     cache_client.set(str(chat_id), helpers.CachePhase.DEFAULT_DIALOG)
-    result_message = helpers.BotMessage.MAIN_MENU_TEXT
-    keyboard = get_main_menu_keyboard()
+    result_message = locale_object.MAIN_MENU_TEXT
+    keyboard = get_main_menu_keyboard(locale_object)
     return bot.send_message(message.chat.id, result_message, reply_markup=keyboard)
 
 
@@ -106,21 +108,23 @@ def show_main_menu_command(message):
 def start_bot_command_handler(message):
     """
     Нажали на запуск бота
-    :param message:
+    :param message: обьект сообщения бота
     :return:
     """
     chat_id = message.chat.id
+    locale_object = get_localisation_for_user(chat_id)
     cache_client.set(str(chat_id), helpers.CachePhase.WRITE_TEXT_FOR_GPT)
-    return bot.send_message(chat_id, "Введите текст запрос к Chat GPT по-английски")
+
+    return bot.send_message(chat_id, locale_object.TYPE_TEXT)
 
 
 @bot.message_handler(func=helpers.write_chat_gpt_command_validator)
 def answer_user_after_request(message):
     chat_id = message.chat.id
     start_param = '=' * 5
-
-    base_text = "\nЖдем ответа от Chat GPT\n"
-    result_text = "Ответ от Chat GPT:\n\n"
+    locale_object = get_localisation_for_user(chat_id)
+    base_text = locale_object.WAITING_ANSWER_FROM_GPT
+    result_text = locale_object.ANSWER_FROM_GPT
     msg = bot.send_message(chat_id, start_param + base_text + start_param)
     start_param += start_param
     time.sleep(1)
@@ -135,9 +139,9 @@ def answer_user_after_request(message):
     bot.edit_message_text(text=result_text, chat_id=chat_id, message_id=msg.message_id)
 
     answer_from_chat_gpt = generate_answer_from_chat_gpt('Please come up with five names for the grocery store')
-    keyboard = get_menu_after_write_keyboard()
+    keyboard = get_menu_after_write_keyboard(locale_object)
     bot.send_message(chat_id, answer_from_chat_gpt)
-    return bot.send_message(chat_id, "Вы можете задать еще один вопрос прямо в этом диалоге\nЕсли хотите поменять настройки вы можете нажать кнопку \"Главное меню\"", reply_markup=keyboard)
+    return bot.send_message(chat_id, locale_object.ANOTHER_QUESTION, reply_markup=keyboard)
 
 
 @bot.message_handler(func=helpers.my_profile_command_validator)
@@ -164,9 +168,13 @@ def unknown_command_handler(message):
     Нажали неизвестную команду не в режиме когда пишем боту
     :param message: обьект сообщения телеграмма
     """
-    keyboard = get_main_menu_keyboard()
-    # message.chat.id
-    return bot.send_message(message.chat.id, "Не знаю такой команды\nПопробуйте ввести заново)", reply_markup=keyboard)
+    chat_id = message.chat.id
+    locale_object = get_localisation_for_user(chat_id)
+
+    keyboard = get_main_menu_keyboard(locale_object)
+    chat_id = message.chat.id
+    locale_object = get_localisation_for_user(chat_id)
+    return bot.send_message(message.chat.id, locale_object.UNKNOWN_COMMAND, reply_markup=keyboard)
 
 
 def remove_message(chat_id, message_id) -> None:
@@ -176,7 +184,11 @@ def remove_message(chat_id, message_id) -> None:
     :param message_id: идентификатор сообщения
     :return: None
     """
-    return bot.delete_message(chat_id=chat_id, message_id=message_id)
+    try:
+        return bot.delete_message(chat_id=chat_id, message_id=message_id)
+    except Exception as e:
+        log_error_in_file()
+        return
 
 
 def generate_answer_from_chat_gpt(request_text):
