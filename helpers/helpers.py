@@ -8,6 +8,8 @@ from functools import partial
 from time import sleep
 from traceback import print_exception
 from requests_futures import sessions
+from locales.ru.locale import BotMessage
+from locales.main import get_unique_methods
 
 
 class Locale:
@@ -43,32 +45,6 @@ class Const:
 class CachePhase:
     DEFAULT_DIALOG = 0
     WRITE_TEXT_FOR_GPT = 1
-
-
-class BotMessage:
-    """
-    Тексты сообщений при нажатии на команды
-    """
-    START_TEXT = 'Hi, {}!\nUse possibilities of ChatGPT in Telegram'
-    MAIN_MENU_TEXT = 'Редактируйте свой профиль или начните диалог с ботом'
-    HELP = 'Помощь'
-    ABOUT = 'О боте'
-    START_BOT = 'Начать диалог c Сhat GPT'
-    PROFILE = 'Мой профиль'
-    MAIN_MENU = 'Главное меню'
-    LANGUAGE = 'Язык бота: '
-    TEMPERATURE = 'Точность генерации: '
-    SAVE_PROFILE = 'Сохранить профиль'
-    EARN_WITH_CHATGPT = 'Заработай с ботом'
-    MY_PROFILE_TEXT = "Ваш профиль:"
-
-    @classmethod
-    def get_unique_methods(cls):
-        """
-        Возвращает уникальные методы, которые не нужно распознаавть как неизвестные команды
-        :return:
-        """
-        return [BotMessage.MAIN_MENU]
 
 
 class BotCommands:
@@ -237,7 +213,7 @@ def main_menu_bot_command_validator(text) -> bool:
     :param text: обьект сообщения
     :return: bool - ожидаем команду start?
     """
-    return text.html_text in BotMessage.get_unique_methods()
+    return text.html_text in get_unique_methods()
 
 
 def start_bot_command_validator(text) -> bool:
@@ -277,4 +253,4 @@ def unknown_command_validator(message) -> bool:
     chat_id = message.chat.id
     command = message.html_text
     command_phase = cache_client.get(str(chat_id))
-    return not command_phase or command_phase == b'0' and command not in BotMessage.get_unique_methods()
+    return not command_phase or command_phase == b'0' and command not in get_unique_methods()

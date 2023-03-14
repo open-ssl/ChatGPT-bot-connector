@@ -7,6 +7,7 @@ from helpers.helpers import (
     log_error_in_file
 )
 from helpers import sql_templates
+from locales.main import get_language_object_by_locale
 
 
 def initialise_user_if_need(message_obj):
@@ -75,9 +76,10 @@ def set_new_locale_for_user(user_id):
     return new_locale
 
 
-def generate_buttons_for_profile_menu_keyboard(user_id: int):
+def generate_buttons_for_profile_menu_keyboard(locale_object, user_id: int):
     """
     Генерирует элементы клавиатуры для пользователя исходя из данных в БД
+    :param: locale_object - обьект локали для генерации текстов и надписей
     :param: user_id - айдишник пользователя
     :return: словарь обьектов клавиатуры
     """
@@ -90,7 +92,18 @@ def generate_buttons_for_profile_menu_keyboard(user_id: int):
     text_language = Locale.get_language_name_by_preffix(language)
 
     return {
-        BotCommands.LANGUAGE: BotMessage.LANGUAGE + f' {text_language}',
-        BotCommands.TEMPERATURE: BotMessage.TEMPERATURE + f' {int(temperature)}',
-        BotCommands.SAVE_PROFILE: BotMessage.SAVE_PROFILE
+        BotCommands.LANGUAGE: locale_object.LANGUAGE + f' {text_language}',
+        BotCommands.TEMPERATURE: locale_object.TEMPERATURE + f' {int(temperature)}',
+        BotCommands.SAVE_PROFILE: locale_object.SAVE_PROFILE
     }
+
+
+def get_localisation_for_user(user_id):
+    """
+    Получаем язык локализации для пользователя из БД
+    и далее получаем по нему реальный обьект
+    :param user_id: идентификтор пользователя
+    :return: обьект локализации
+    """
+    current_locale = fetch_data_from_db(sql_templates.GET_CURRENT_LOCALE_FOR_USER_TEMPLATE, user_id, fetchall=False)
+    return get_language_object_by_locale(current_locale)

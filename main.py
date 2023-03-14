@@ -12,6 +12,7 @@ from helpers import sql_templates
 from helpers.db_helpers import (
     initialise_user_if_need,
     generate_buttons_for_profile_menu_keyboard,
+    get_localisation_for_user,
     set_new_locale_for_user
 )
 from helpers.translator import convert_text
@@ -55,14 +56,17 @@ def set_language_command(message):
     :param message: обьект сообщения пользователя из телеграмма
     :return: отредактированное сообщение
     """
-    # сделать запрос вернуть новый язык
     chat_id = message.chat.id
     message_id = message.message_id
     set_new_locale_for_user(chat_id)
-    profile_buttons = generate_buttons_for_profile_menu_keyboard(chat_id)
+
+    locale_object = get_localisation_for_user(chat_id)
+
+    profile_buttons = generate_buttons_for_profile_menu_keyboard(locale_object, chat_id)
     keyboard = get_profile_keyboard(profile_buttons)
+
     return bot.edit_message_text(
-        text=BotMessage.MY_PROFILE_TEXT,
+        text=locale_object.MY_PROFILE_TEXT,
         chat_id=chat_id,
         message_id=message_id,
         reply_markup=keyboard
@@ -143,12 +147,15 @@ def my_profile_request(message):
     :param message: обьект сообщения телеграмма
     """
     chat_id = message.chat.id
+    locale_object = get_localisation_for_user(chat_id)
     thread = Thread(target=remove_message, args=(chat_id, message.message_id))
+    thread2 = Thread(target=remove_message, args=(chat_id, message.message_id - 1))
     thread.start()
+    thread2.start()
 
-    profile_buttons = generate_buttons_for_profile_menu_keyboard(chat_id)
+    profile_buttons = generate_buttons_for_profile_menu_keyboard(locale_object, chat_id)
     keyboard = get_profile_keyboard(profile_buttons)
-    return bot.send_message(chat_id, BotMessage.MY_PROFILE_TEXT, reply_markup=keyboard)
+    return bot.send_message(chat_id, locale_object.MY_PROFILE_TEXT, reply_markup=keyboard)
 
 
 @bot.message_handler(func=helpers.unknown_command_validator)
@@ -173,23 +180,24 @@ def remove_message(chat_id, message_id) -> None:
 
 
 def generate_answer_from_chat_gpt(request_text):
+    """
+    Получить ответ от Chat GPT
+    :param request_text: текст запроса к Chat GPT по английски
+    :return:
+    """
+    # 'gpt-3.5-turbo'
+
     return '\n\n1. Fresh Groceries\n2. Green Markets\n3. Supermarket Express\n4. Corner Pantry\n5. The Grocery Cart'
 
 
-def get_random_api_key():
-    'gpt-3.5-turbo'
+def get_random_api_key() -> str:
+    """
+    Получение случайного API ключа для запроса к Chat-GPT
+    Снижаем нагрузку на сервер
+    :return: str - API ключ для запроса в API Chat-GPT
+    """
     key_index = randint(0, len(KEY_LIST) - 1)
     return KEY_LIST[key_index]
-
-
-def test_db_query():
-    """
-    Фунеция для тестирования запросов в БД
-    :return: результат запроса
-    """
-    # TODO remove after testing
-    query_result = database.fetch_data_from_db(sql_templates.CHECK_USER_IN_DB_TEMPLATE, 1, fetchall=False)
-    return query_result[0]
 
 
 if __name__ == '__main__':
