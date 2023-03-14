@@ -14,9 +14,30 @@ class Locale:
     ENGLISH = 'en'
     RUSSIAN = 'ru'
 
+    ENGLISH_LANGUAGE = '🇺🇸English🇺🇸'
+    RUSSIAN_LANGUAGE = '🇷🇺Русский🇷🇺'
+
+    @classmethod
+    def get_opposite_locale_for_user(cls, current_locale):
+        """
+        Получение новой локали для смены языка
+        :param current_locale: текущая локаль пользователя
+        :return: локаль на которую будем менять язык
+        """
+        return cls.ENGLISH if current_locale == cls.RUSSIAN else cls.RUSSIAN
+
+    @classmethod
+    def get_language_name_by_preffix(cls, prefix):
+        return {
+            cls.RUSSIAN: cls.RUSSIAN_LANGUAGE,
+            cls.ENGLISH: cls.ENGLISH_LANGUAGE,
+        }.get(prefix)
+
 
 class Const:
     DEFAULT_TEMPERATURE_FOR_USER = 0.6
+    TEMPERATURE = 'temperature'
+    LANGUAGE = 'language'
 
 
 class CachePhase:
@@ -35,7 +56,11 @@ class BotMessage:
     START_BOT = 'Начать диалог c Сhat GPT'
     PROFILE = 'Мой профиль'
     MAIN_MENU = 'Главное меню'
+    LANGUAGE = 'Язык бота: '
+    TEMPERATURE = 'Точность генерации: '
+    SAVE_PROFILE = 'Сохранить профиль'
     EARN_WITH_CHATGPT = 'Заработай с ботом'
+    MY_PROFILE_TEXT = "Ваш профиль:"
 
     @classmethod
     def get_unique_methods(cls):
@@ -57,6 +82,9 @@ class BotCommands:
     EARN_WITH_CHATGPT = 'earn_with_chatgpt'
     HELP = 'help'
     ABOUT = 'about'
+    LANGUAGE = 'language'
+    TEMPERATURE = 'temperature'
+    SAVE_PROFILE = 'save_profile'
 
     START_DESCRIPTION = 'Start main bot'
     START_BOT_DESCRIPTION = 'Start dialog with ChatGPT'
@@ -163,6 +191,20 @@ def get_main_menu_keyboard():
     return keyboard
 
 
+def get_profile_keyboard(profile_buttons: dict):
+    """
+    Генерация клавиатуры для профиля пользователя
+    :param profile_buttons: обьект названий кнопок и колбекеков из БД
+    :return: Обьект клавиатуры для вставки в реплай сообщения
+    """
+    keyboard = types.InlineKeyboardMarkup()
+
+    for callback_handler, command_text in profile_buttons.items():
+        keyboard_button = partial(types.InlineKeyboardButton, text=command_text, callback_data=callback_handler)
+        keyboard.add(keyboard_button())
+    return keyboard
+
+
 def get_menu_after_write_keyboard():
     """
     Генерация клавиатуры c меню после отправки ChatGPT
@@ -214,6 +256,15 @@ def write_chat_gpt_command_validator(message) -> bool:
     chat_id = message.chat.id
     command_phase = cache_client.get(str(chat_id))
     return command_phase and command_phase == b'1'
+
+
+def my_profile_command_validator(text) -> bool:
+    """
+    Проверка сообщения на принадлежность к команде /my_profile
+    :param text: обьект сообщения
+    :return: bool - ожидаем команду my_profile?
+    """
+    return text.html_text in [BotMessage.PROFILE, f'/{BotCommands.PROFILE}']
 
 
 def unknown_command_validator(message) -> bool:

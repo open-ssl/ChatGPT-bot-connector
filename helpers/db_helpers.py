@@ -1,5 +1,11 @@
 from helpers.database import fetch_data_from_db, insert_data_in_db
-from helpers.helpers import Const, Locale, log_error_in_file
+from helpers.helpers import (
+    Const,
+    BotCommands,
+    BotMessage,
+    Locale,
+    log_error_in_file
+)
 from helpers import sql_templates
 
 
@@ -22,8 +28,7 @@ def check_user_in_db(user_id: int) -> bool:
     :param user_id: айдишник пользователя для проверки
     :return: логика наличия нового пользователя
     """
-    query_result = fetch_data_from_db(sql_templates.CHECK_USER_IN_DB_TEMPLATE, user_id, fetchall=False)
-    return query_result[0]
+    return fetch_data_from_db(sql_templates.CHECK_USER_IN_DB_TEMPLATE, user_id, fetchall=False)
 
 
 def create_new_user_in_db(message) -> bool:
@@ -54,3 +59,38 @@ def create_new_user_in_db(message) -> bool:
         operation_result = False
 
     return operation_result
+
+
+def set_new_locale_for_user(user_id):
+    """
+    Замена локализации для пользователя
+    :param user_id: идентификактор пользователя
+    :return: новая установленная локаль
+    """
+    current_locale = fetch_data_from_db(sql_templates.GET_CURRENT_LOCALE_FOR_USER_TEMPLATE, user_id, fetchall=False)
+    new_locale = Locale.get_opposite_locale_for_user(current_locale)
+
+    insert_data_in_db(sql_templates.UPDATE_LOCALE_FOR_USER_TEMPLATE, new_locale, user_id)
+
+    return new_locale
+
+
+def generate_buttons_for_profile_menu_keyboard(user_id: int):
+    """
+    Генерирует элементы клавиатуры для пользователя исходя из данных в БД
+    :param: user_id - айдишник пользователя
+    :return: словарь обьектов клавиатуры
+    """
+    profile_data = fetch_data_from_db(sql_templates.GET_DATA_FOR_PROFILE_KEYBOARD_TEMPLATE, user_id, fetchall=False)
+
+    language = profile_data.get(Const.LANGUAGE)
+    temperature = profile_data.get(Const.TEMPERATURE)
+    temperature = float(temperature) * 10
+
+    text_language = Locale.get_language_name_by_preffix(language)
+
+    return {
+        BotCommands.LANGUAGE: BotMessage.LANGUAGE + f' {text_language}',
+        BotCommands.TEMPERATURE: BotMessage.TEMPERATURE + f' {int(temperature)}',
+        BotCommands.SAVE_PROFILE: BotMessage.SAVE_PROFILE
+    }

@@ -4,6 +4,17 @@ CHECK_USER_IN_DB_TEMPLATE = """
     ) 
 """
 
+GET_CURRENT_LOCALE_FOR_USER_TEMPLATE = """
+    select language from users where user_id = {}
+"""
+
+GET_DATA_FOR_PROFILE_KEYBOARD_TEMPLATE = """
+    select json_build_object(
+        'temperature', temperature, 
+        'language', language
+    ) from users where user_id = {}
+"""
+
 INSERT_NEW_USER_IN_DB_TEMPLATE = """
     INSERT INTO users VALUES(
     	{}, {}, {}, {}, {}, current_timestamp, {}
@@ -14,4 +25,8 @@ INSERT_NEW_SUB_INFO_IN_DB_TEMPLATE = """
     INSERT INTO sub_info VALUES(
     	{}, 0, current_timestamp, NULL, 0, 50000
     )
+"""
+
+UPDATE_LOCALE_FOR_USER_TEMPLATE = """
+    UPDATE users SET language='{}' WHERE user_id = {}
 """

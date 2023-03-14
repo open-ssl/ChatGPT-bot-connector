@@ -33,13 +33,13 @@ def fetch_data_from_db(query_template, *args, fetchall=True):
         query_template = query_template.format(*args)
         cursor.execute(query_template)
         if not fetchall:
-            return cursor.fetchone()
-        return cursor.fetchall()
+            return cursor.fetchone()[0]
+        return cursor.fetchall()[0]
 
 
 def insert_data_in_db(query_template, *args):
     """
-    Безопасный запрос в базу данных на вставку записей из выборки
+    Безопасный запрос в базу данных на вставку или изменение записей
     :param query_template: шаблон для запроса в БД
     :param args: аргументы для вставки в шаблон запроса
     :return: None
