@@ -5,7 +5,7 @@ from helpers.helpers import (
     Locale,
     log_error_in_file
 )
-from helpers import sql_templates
+from db_helpers import sql_templates
 from locales.main import get_language_object_by_locale
 
 
@@ -28,7 +28,7 @@ def check_user_in_db(user_id: int) -> bool:
     :param user_id: айдишник пользователя для проверки
     :return: логика наличия нового пользователя
     """
-    return fetch_data_from_db(sql_templates.CHECK_USER_IN_DB_TEMPLATE, user_id, fetchall=False)
+    return fetch_data_from_db(sql_templates.CHECK_USER_IN_DB_TEMPLATE, user_id)
 
 
 def create_new_user_in_db(message) -> bool:
@@ -67,7 +67,7 @@ def set_new_locale_for_user(user_id):
     :param user_id: идентификактор пользователя
     :return: новая установленная локаль
     """
-    current_locale = fetch_data_from_db(sql_templates.GET_CURRENT_LOCALE_FOR_USER_TEMPLATE, user_id, fetchall=False)
+    current_locale = fetch_data_from_db(sql_templates.GET_CURRENT_LOCALE_FOR_USER_TEMPLATE, user_id)
     new_locale = Locale.get_opposite_locale_for_user(current_locale)
 
     insert_data_in_db(sql_templates.UPDATE_LOCALE_FOR_USER_TEMPLATE, new_locale, user_id)
@@ -82,7 +82,7 @@ def generate_buttons_for_profile_menu_keyboard(locale_object, user_id: int):
     :param: user_id - айдишник пользователя
     :return: словарь обьектов клавиатуры
     """
-    profile_data = fetch_data_from_db(sql_templates.GET_DATA_FOR_PROFILE_KEYBOARD_TEMPLATE, user_id, fetchall=False)
+    profile_data = fetch_data_from_db(sql_templates.GET_DATA_FOR_PROFILE_KEYBOARD_TEMPLATE, user_id)
 
     language = profile_data.get(Const.LANGUAGE)
     temperature = profile_data.get(Const.TEMPERATURE)
@@ -104,5 +104,28 @@ def get_localisation_for_user(user_id):
     :param user_id: идентификтор пользователя
     :return: обьект локализации
     """
-    current_locale = fetch_data_from_db(sql_templates.GET_CURRENT_LOCALE_FOR_USER_TEMPLATE, user_id, fetchall=False)
+    current_locale = fetch_data_from_db(sql_templates.GET_CURRENT_LOCALE_FOR_USER_TEMPLATE, user_id)
     return get_language_object_by_locale(current_locale)
+
+
+def get_text_for_profile(user_id, locale_object):
+    """
+    Получаем корректный текст для профиля пользоватеял
+    :param user_id:
+    :param locale_object:
+    :return:
+    """
+    base_profile_text = locale_object.MY_PROFILE_TEXT
+    activity_and_tokens_info = fetch_data_from_db(sql_templates.GET_ACTIVITY_AND_TOKENS_FOR_USER, user_id)
+
+    has_subscription = activity_and_tokens_info.get(Const.ACTIVITY_STATUS)
+    tokens = activity_and_tokens_info.get(Const.TOKENS)
+
+    if has_subscription:
+        # получить дату истечения подписки
+        base_profile_text += locale_object.MY_PROFILE_INFO_WITH_SUB_TEXT
+    else:
+        # получить количество оставшихся токенов
+        base_profile_text += locale_object.MY_PROFILE_INFO_NOT_SUB_TEXT.format(tokens)
+
+    return base_profile_text

@@ -30,3 +30,10 @@ INSERT_NEW_SUB_INFO_IN_DB_TEMPLATE = """
 UPDATE_LOCALE_FOR_USER_TEMPLATE = """
     UPDATE users SET language='{}' WHERE user_id = {}
 """
+
+GET_ACTIVITY_AND_TOKENS_FOR_USER = """
+    select json_build_object(
+        'activity_status', activity_status, 
+        'tokens', tokens
+    ) from sub_info where user_id = {}
+"""
