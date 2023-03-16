@@ -1,25 +1,19 @@
 import time
-import openai
-import telebot
 
-from random import choice, randint
+from random import randint
 from threading import Thread
 
-from bot_config import bot, cache_client, CHAT_GPT_MODEL_NAME, KEY_LIST
+from bot_config import bot, cache_client, KEY_LIST
 from helpers import helpers
-from helpers import database
-from helpers import sql_templates
-from helpers.db_helpers import (
+from db_helpers.db_helpers import (
     initialise_user_if_need,
     generate_buttons_for_profile_menu_keyboard,
     get_localisation_for_user,
-    set_new_locale_for_user
+    set_new_locale_for_user,
+    get_text_for_profile
 )
-from helpers.translator import convert_text
 from helpers.helpers import (
-    Const,
     BotCommands,
-    post_request,
     get_main_menu_keyboard,
     get_menu_after_write_keyboard,
     get_profile_keyboard,
@@ -64,11 +58,14 @@ def set_language_command(message):
     profile_buttons = generate_buttons_for_profile_menu_keyboard(locale_object, chat_id)
     keyboard = get_profile_keyboard(profile_buttons)
 
+    profile_text = get_text_for_profile(chat_id, locale_object)
+
     return bot.edit_message_text(
-        text=locale_object.MY_PROFILE_TEXT,
+        text=profile_text,
         chat_id=chat_id,
         message_id=message_id,
-        reply_markup=keyboard
+        reply_markup=keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -83,7 +80,12 @@ def start_command(message):
     chat_id = message.chat.id
     locale_object = get_localisation_for_user(chat_id)
     user_first_name = message.chat.first_name
-    start_message = locale_object.START_TEXT.format(user_first_name)
+
+    if user_first_name:
+        start_message = locale_object.START_TEXT.format(user_first_name)
+    else:
+        start_message = locale_object.START_COMMON_TEXT
+
     keyboard = get_main_menu_keyboard(locale_object)
 
     return bot.send_message(message.chat.id, start_message, reply_markup=keyboard)
@@ -159,7 +161,9 @@ def my_profile_request(message):
 
     profile_buttons = generate_buttons_for_profile_menu_keyboard(locale_object, chat_id)
     keyboard = get_profile_keyboard(profile_buttons)
-    return bot.send_message(chat_id, locale_object.MY_PROFILE_TEXT, reply_markup=keyboard)
+
+    profile_text = get_text_for_profile(chat_id, locale_object)
+    return bot.send_message(chat_id, profile_text, reply_markup=keyboard, parse_mode='HTML')
 
 
 @bot.message_handler(func=helpers.unknown_command_validator)

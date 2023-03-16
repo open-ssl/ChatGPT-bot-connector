@@ -3,6 +3,7 @@ class BotMessage:
     Английские тексты сообщений при нажатии на команды
     """
     START_TEXT = 'Hello, {}!\nUse Chat GPT in Telegram!'
+    START_COMMON_TEXT = 'Hello!\nUse Chat GPT in Telegram!'
     MAIN_MENU_TEXT = 'Edit your profile and start to chat with Chat GPT'
     HELP = 'Help'
     ABOUT = 'About bot'
@@ -13,7 +14,10 @@ class BotMessage:
     TEMPERATURE = 'Precision of generation: '
     SAVE_PROFILE = 'Save profile'
     EARN_WITH_CHATGPT = 'Earn with bot'
-    MY_PROFILE_TEXT = "Your profile:"
+    MY_PROFILE_TEXT = "Your profile:\n\n"
+    MY_PROFILE_INFO_NOT_SUB_TEXT = "Count of tokens: <b>{}</b>\nBuy a subscription to use the bot without " \
+                                   "restrictions\n\nUse command /buy_subscription"
+    MY_PROFILE_INFO_WITH_SUB_TEXT = "Count of tokens: ∞\nYour subscription expired at: {}"
     TYPE_TEXT = "Type question for Chat GPT in English"
     WAITING_ANSWER_FROM_GPT = "\nWaiting answer from Chat GPT\n"
     ANSWER_FROM_GPT = "Answer from Chat GPT:\n\n"

@@ -41,6 +41,8 @@ class Const:
     DEFAULT_TEMPERATURE_FOR_USER = 0.6
     TEMPERATURE = 'temperature'
     LANGUAGE = 'language'
+    ACTIVITY_STATUS = 'activity_status'
+    TOKENS = 'tokens'
 
 
 class CachePhase:

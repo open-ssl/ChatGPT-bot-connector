@@ -17,11 +17,11 @@ def get_db_session() -> psycopg2.connect:
     )
 
 
-def fetch_data_from_db(query_template, *args, fetchall=True):
+def fetch_data_from_db(query_template, *args, fetchone=True):
     """
     Безопасный запрос в базу данных на извлечение записей из выборки
     :param query_template: шаблон для запроса в БД
-    :param fetchall: bool - выгружать все записи или только первую из выборки
+    :param fetchone: bool - выгружать только первую из выборки или все
     :param args: аргументы для вставки в шаблон запроса
     :return: Результаты запроса
     """
@@ -32,7 +32,7 @@ def fetch_data_from_db(query_template, *args, fetchall=True):
 
         query_template = query_template.format(*args)
         cursor.execute(query_template)
-        if not fetchall:
+        if fetchone:
             return cursor.fetchone()[0]
         return cursor.fetchall()[0]
 
