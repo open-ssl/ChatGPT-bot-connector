@@ -72,6 +72,15 @@ def set_language_command(message):
     )
 
 
+def set_temperature_command(message):
+    """
+    Устанавливаем точность генерации сообщения для бота
+    :param message: обьект сообщения пользователя из телеграмма
+    :return: обновленный профиль
+    """
+    pass
+
+
 def show_parameters_info(message):
     """
     Показать информацию по тому, как установить корректные параметры для бота
