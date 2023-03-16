@@ -13,6 +13,8 @@ class BotMessage:
     LANGUAGE = 'Bot language: '
     TEMPERATURE = 'Precision of generation: '
     SAVE_PROFILE = 'Save profile'
+    PROFILE_INFO = 'How to set parameters?'
+    BACK_TO_PROFILE = 'Back to profile'
     EARN_WITH_CHATGPT = 'Earn with bot'
     MY_PROFILE_TEXT = "Your profile:\n Press any button to change the value\n\n"
     MY_PROFILE_INFO_NOT_SUB_TEXT = "Count of tokens: <b>{}</b>\nBuy a subscription to use the bot without " \
@@ -24,10 +26,11 @@ class BotMessage:
     ANOTHER_QUESTION = "You can ask another one querstion right in this dialog\n" \
                        "If you would change preferences You could press \"Main menu\" button"
     UNKNOWN_COMMAND = "Unknown command\nTry again"
-    TEMPERATURE_TEXT = """What is the temperature?\n\nTemperature is a value between 0 and 10 that essentially lets 
-        you control how confident the model should be when making\nthese predictions. Lowering temperature means it will 
-        take fewer risks, and completions \nwill be more accurate and deterministic. \nIncreasing temperature will result 
-        in more diverse completions. \n\nThe value a 6 is a good default value for generating unique results by model"""
+    TEMPERATURE_TEXT = "<b>What is the temperature?</b>\n\nTemperature is a value between 0 and 10 that essentially " \
+                       "lets you control how confident the model should be when making these predictions. Lowering " \
+                       "temperature means it will take fewer risks, and completions \nwill be more accurate and " \
+                       "deterministic. \nIncreasing temperature will result in more diverse completions.\n\nThe " \
+                       "value 6 is a good default value for generating unique results by model "
 
     @classmethod
     def get_unique_methods(cls):

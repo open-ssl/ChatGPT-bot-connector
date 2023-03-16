@@ -93,6 +93,7 @@ def generate_buttons_for_profile_menu_keyboard(locale_object, user_id: int):
     return {
         BotCommands.LANGUAGE: locale_object.LANGUAGE + f' {text_language}',
         BotCommands.TEMPERATURE: locale_object.TEMPERATURE + f' {int(temperature)}',
+        BotCommands.PROFILE_INFO: locale_object.PROFILE_INFO,
         BotCommands.SAVE_PROFILE: locale_object.SAVE_PROFILE
     }
 

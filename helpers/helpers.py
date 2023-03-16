@@ -63,7 +63,9 @@ class BotCommands:
     ABOUT = 'about'
     LANGUAGE = 'language'
     TEMPERATURE = 'temperature'
+    PROFILE_INFO = 'profile_info'
     SAVE_PROFILE = 'save_profile'
+    BACK_TO_PROFILE = 'back_to_profile'
 
     START_DESCRIPTION = 'Start main bot'
     START_BOT_DESCRIPTION = 'Start dialog with ChatGPT'
@@ -83,6 +85,12 @@ class BotCommands:
         return {
             cls.MAIN_MENU: locale_object.MAIN_MENU,
             cls.EARN_WITH_CHATGPT: locale_object.EARN_WITH_CHATGPT,
+        }
+
+    @classmethod
+    def get_back_to_profile_command(cls, local_object):
+        return {
+            cls.BACK_TO_PROFILE: local_object.BACK_TO_PROFILE
         }
 
 
@@ -137,6 +145,20 @@ def post_request(url, json_data):
             sleep(0.5)
 
     return request_result.result()
+
+
+def get_profile_info_back_keyboard(locale_obj):
+    """
+    Генерация клавиатуры назад в профиль
+    :param locale_obj: обьект локализации
+    :return: Обьект клавиатуры для вставки в реплай сообщения
+    """
+    keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+    bot_commands = BotCommands.get_back_to_profile_command(local_object=locale_obj)
+    for command_text in bot_commands.values():
+        keyboard_button = partial(types.KeyboardButton, text=command_text)
+        keyboard.add(keyboard_button())
+    return keyboard
 
 
 def get_main_menu_keyboard(locale_obj):
@@ -226,7 +248,11 @@ def my_profile_command_validator(text) -> bool:
     :param text: обьект сообщения
     :return: bool - ожидаем команду my_profile?
     """
-    return text.html_text in [BotMessageRu.PROFILE, BotMessageEn.PROFILE, f'/{BotCommands.PROFILE}']
+    return text.html_text in [
+        BotMessageRu.PROFILE, BotMessageEn.PROFILE,
+        BotMessageRu.BACK_TO_PROFILE, BotMessageEn.BACK_TO_PROFILE,
+        f'/{BotCommands.PROFILE}'
+    ]
 
 
 def unknown_command_validator(message) -> bool:
