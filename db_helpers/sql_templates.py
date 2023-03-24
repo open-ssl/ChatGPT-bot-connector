@@ -31,6 +31,10 @@ UPDATE_LOCALE_FOR_USER_TEMPLATE = """
     UPDATE users SET language='{}' WHERE user_id = {}
 """
 
+UPDATE_TEMPERATURE_FOR_USER_TEMPLATE = """
+    UPDATE users SET temperature='{}' WHERE user_id = {}
+"""
+
 GET_ACTIVITY_AND_TOKENS_FOR_USER = """
     select json_build_object(
         'activity_status', activity_status, 

@@ -4,6 +4,7 @@ from telebot import types
 
 import bot_config
 from bot_config import cache_client
+from config import TG_AUTHOR_LINK
 from functools import partial
 from time import sleep
 from traceback import print_exception
@@ -48,6 +49,7 @@ class Const:
 class CachePhase:
     DEFAULT_DIALOG = 0
     WRITE_TEXT_FOR_GPT = 1
+    TEMPERATURE_INPUT = 2
 
 
 class BotCommands:
@@ -58,7 +60,8 @@ class BotCommands:
     START_BOT = 'start_bot'
     MAIN_MENU = 'main_menu'
     PROFILE = 'my_profile'
-    EARN_WITH_CHATGPT = 'earn_with_chatgpt'
+    BUY_SUBSCRIPTION = 'buy_subscription'
+    WRITE_AUTHOR = 'write_author'
     HELP = 'help'
     ABOUT = 'about'
     LANGUAGE = 'language'
@@ -77,20 +80,26 @@ class BotCommands:
         return {
             cls.START: locale_obj.START_BOT,
             cls.PROFILE: locale_obj.PROFILE,
-            cls.EARN_WITH_CHATGPT: locale_obj.EARN_WITH_CHATGPT,
+            cls.BUY_SUBSCRIPTION: locale_obj.BUY_SUBSCRIPTION,
+            cls.WRITE_AUTHOR: locale_obj.WRITE_AUTHOR,
         }
 
     @classmethod
     def get_menu_after_dialog_commands(cls, locale_object):
         return {
-            cls.MAIN_MENU: locale_object.MAIN_MENU,
-            cls.EARN_WITH_CHATGPT: locale_object.EARN_WITH_CHATGPT,
+            cls.MAIN_MENU: locale_object.MAIN_MENU
         }
 
     @classmethod
     def get_back_to_profile_command(cls, local_object):
         return {
             cls.BACK_TO_PROFILE: local_object.BACK_TO_PROFILE
+        }
+
+    @classmethod
+    def get_author_command(cls, local_object):
+        return {
+            cls.WRITE_AUTHOR: local_object.WRITE_AUTHOR
         }
 
 
@@ -201,6 +210,21 @@ def get_menu_after_write_keyboard(locale_object):
     return keyboard
 
 
+def author_inline_keyboard(locale_object):
+    """
+    Инлайн клавиатура со ссылкой на автора
+    :return: Обьект инлайн-клавиатуры для вставки в реплай сообщения
+    """
+    keyboard = types.InlineKeyboardMarkup()
+    author_buttons = BotCommands.get_author_command(locale_object)
+    for callback_command, command_text in author_buttons.items():
+        url = TG_AUTHOR_LINK if callback_command == BotCommands.WRITE_AUTHOR else None
+        keyboard_button = partial(types.InlineKeyboardButton, text=command_text,
+                                  callback_data=callback_command, url=url)
+        keyboard.add(keyboard_button())
+    return keyboard
+
+
 def initialize_main_menu():
     bot = bot_config.bot
     bot.set_my_commands(commands=[
@@ -242,6 +266,17 @@ def write_chat_gpt_command_validator(message) -> bool:
     return command_phase and command_phase == b'1'
 
 
+def input_temperature_validator(message) -> bool:
+    """
+    Проверка того, что мы печатаем новое значение для температуры
+    """
+    message_text = message.html_text
+    chat_id = message.chat.id
+    command_phase = cache_client.get(str(chat_id))
+    return command_phase and command_phase == b'2' and message_text not in [BotMessageRu.BACK_TO_PROFILE, BotMessageEn.BACK_TO_PROFILE,
+                                                        f'/{BotCommands.BACK_TO_PROFILE}']
+
+
 def my_profile_command_validator(text) -> bool:
     """
     Проверка сообщения на принадлежность к команде /my_profile
@@ -252,6 +287,16 @@ def my_profile_command_validator(text) -> bool:
         BotMessageRu.PROFILE, BotMessageEn.PROFILE,
         BotMessageRu.BACK_TO_PROFILE, BotMessageEn.BACK_TO_PROFILE,
         f'/{BotCommands.PROFILE}'
+    ]
+
+def write_author_validator(text) -> bool:
+    """
+    Проверка сообщения на принадлежность к команде /write_author
+    :param text: обьект сообщения
+    :return: bool - ожидаем команду write_author?
+    """
+    return text.html_text in [
+        BotMessageRu.WRITE_AUTHOR, BotMessageEn.WRITE_AUTHOR, f'/{BotCommands.WRITE_AUTHOR}'
     ]
 
 

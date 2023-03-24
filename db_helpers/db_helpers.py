@@ -75,6 +75,16 @@ def set_new_locale_for_user(user_id):
     return new_locale
 
 
+def set_new_temperature_for_user(user_id, temperature_value: float):
+    """
+    Замена точности генерации для пользователя
+    :param user_id: идентификактор пользователя
+    :param temperature_value - новое значение точности
+    :return: None
+    """
+    return insert_data_in_db(sql_templates.UPDATE_TEMPERATURE_FOR_USER_TEMPLATE, temperature_value, user_id)
+
+
 def generate_buttons_for_profile_menu_keyboard(locale_object, user_id: int):
     """
     Генерирует элементы клавиатуры для пользователя исходя из данных в БД

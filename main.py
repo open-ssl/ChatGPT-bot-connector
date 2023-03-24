@@ -1,5 +1,6 @@
 import time
 
+from decimal import Decimal
 from random import randint
 from threading import Thread
 
@@ -11,6 +12,7 @@ from db_helpers.db_helpers import (
     generate_buttons_for_profile_menu_keyboard,
     get_localisation_for_user,
     set_new_locale_for_user,
+    set_new_temperature_for_user,
     get_text_for_profile
 )
 from helpers.helpers import (
@@ -19,6 +21,7 @@ from helpers.helpers import (
     get_profile_info_back_keyboard,
     get_menu_after_write_keyboard,
     get_profile_keyboard,
+    author_inline_keyboard,
     log_error_in_file,
 )
 
@@ -36,7 +39,7 @@ def callback_inline(call):
         if call.data == BotCommands.LANGUAGE:
             set_language_command(call.message)
         elif call.data == BotCommands.TEMPERATURE:
-            set_language_command(call.message)
+            set_temperature_command(call.message)
         elif call.data == BotCommands.PROFILE_INFO:
             show_parameters_info(call.message)
         elif call.data == BotCommands.SAVE_PROFILE:
@@ -79,8 +82,52 @@ def set_temperature_command(message):
     :param message: обьект сообщения пользователя из телеграмма
     :return: обновленный профиль
     """
-    # TODO
-    pass
+    user_chat_id = message.chat.id
+    message_id = message.message_id
+    remove_message(user_chat_id, message_id)
+
+    locale_object = get_localisation_for_user(user_chat_id)
+    cache_client.set(str(user_chat_id), helpers.CachePhase.TEMPERATURE_INPUT)
+
+    return bot.send_message(
+        chat_id=user_chat_id,
+        text=locale_object.TYPE_TEMPERATURE_TEXT,
+    )
+
+
+@bot.message_handler(func=helpers.input_temperature_validator)
+def after_set_temperature_command(message):
+    user_chat_id = message.chat.id
+    text_from_user = message.html_text
+    locale_object = get_localisation_for_user(user_chat_id)
+    keyboard = get_profile_info_back_keyboard(locale_object)
+
+    try:
+        num_from_user = int(text_from_user)
+    except:
+        return bot.send_message(
+            chat_id=user_chat_id,
+            text=locale_object.WRONG_TEMPERATURE_TEXT,
+            reply_markup=keyboard
+        )
+
+    if num_from_user < 0 or num_from_user > 10:
+        return bot.send_message(
+            chat_id=user_chat_id,
+            text=locale_object.WRONG_TEMPERATURE_VALUE,
+            reply_markup=keyboard
+        )
+
+    num_from_db = Decimal(num_from_user) / Decimal(10)
+    num_from_db = float(num_from_db)
+    cache_client.set(str(user_chat_id), helpers.CachePhase.DEFAULT_DIALOG)
+    set_new_temperature_for_user(user_chat_id, num_from_db)
+
+    return bot.send_message(
+        chat_id=user_chat_id,
+        text=locale_object.REWRITE_TEMPERATURE_SUCCESS.format(num_from_user),
+        reply_markup=keyboard
+    )
 
 
 def show_parameters_info(message):
@@ -93,8 +140,7 @@ def show_parameters_info(message):
     locale_object = get_localisation_for_user(user_chat_id)
     keyboard = get_profile_info_back_keyboard(locale_object)
 
-    thread = Thread(target=remove_message, args=(user_chat_id, message.message_id))
-    thread.start()
+    remove_message(user_chat_id, message.message_id)
 
     return bot.send_message(
         chat_id=user_chat_id,
@@ -188,17 +234,30 @@ def my_profile_request(message):
     :param message: обьект сообщения телеграмма
     """
     user_chat_id = message.chat.id
+    cache_client.set(str(user_chat_id), helpers.CachePhase.DEFAULT_DIALOG)
     locale_object = get_localisation_for_user(user_chat_id)
-    thread = Thread(target=remove_message, args=(user_chat_id, message.message_id))
-    thread2 = Thread(target=remove_message, args=(user_chat_id, message.message_id - 1))
-    thread.start()
-    thread2.start()
+    remove_message(user_chat_id, message.message_id)
+    remove_message(user_chat_id, message.message_id-1)
 
     profile_buttons = generate_buttons_for_profile_menu_keyboard(locale_object, user_chat_id)
     keyboard = get_profile_keyboard(profile_buttons)
 
     profile_text = get_text_for_profile(user_chat_id, locale_object)
     return bot.send_message(user_chat_id, profile_text, reply_markup=keyboard, parse_mode='HTML')
+
+
+@bot.message_handler(func=helpers.write_author_validator)
+def write_author_request(message):
+    """
+    Нажали на команду мой профиль бота
+    :param message: обьект сообщения телеграмма
+    """
+    user_chat_id = message.chat.id
+    cache_client.set(str(user_chat_id), helpers.CachePhase.DEFAULT_DIALOG)
+    locale_object = get_localisation_for_user(user_chat_id)
+    keyboard = author_inline_keyboard(locale_object)
+    write_author_text = locale_object.WRITE_AUTHOR_TEXT
+    return bot.send_message(user_chat_id, write_author_text, reply_markup=keyboard)
 
 
 @bot.message_handler(func=helpers.unknown_command_validator)
@@ -223,10 +282,10 @@ def remove_message(user_chat_id, message_id) -> None:
     :return: None
     """
     try:
-        return bot.delete_message(chat_id=user_chat_id, message_id=message_id)
+        thread = Thread(target=bot.delete_message, kwargs={"chat_id": user_chat_id, "message_id": message_id})
+        thread.start()
     except Exception as e:
         log_error_in_file()
-        return
 
 
 def generate_answer_from_chat_gpt(request_text):
