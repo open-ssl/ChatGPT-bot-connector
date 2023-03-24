@@ -26,10 +26,10 @@ class BotMessage:
     ANOTHER_QUESTION = "You can ask another one querstion right in this dialog\n" \
                        "If you would change preferences You could press \"Main menu\" button"
     UNKNOWN_COMMAND = "Unknown command\nTry again"
-    TEMPERATURE_TEXT = "<b>What is the temperature?</b>\n\nTemperature is a value between 0 and 10 that essentially " \
+    TEMPERATURE_TEXT = "<b>What is the precision of generation?</b>\n\nIt is a value between 0 and 10 that essentially "\
                        "lets you control how confident the model should be when making these predictions. Lowering " \
                        "temperature means it will take fewer risks, and completions \nwill be more accurate and " \
-                       "deterministic. \nIncreasing temperature will result in more diverse completions.\n\nThe " \
+                       "deterministic. \nIncreasing precision of generation will result in more diverse completions.\n\nThe " \
                        "value 6 is a good default value for generating unique results by model "
 
     @classmethod

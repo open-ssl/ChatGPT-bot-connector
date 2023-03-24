@@ -4,6 +4,7 @@ from random import randint
 from threading import Thread
 
 from bot_config import bot, cache_client, KEY_LIST
+from config import TG_USER_ID
 from helpers import helpers
 from db_helpers.db_helpers import (
     initialise_user_if_need,
@@ -78,6 +79,7 @@ def set_temperature_command(message):
     :param message: обьект сообщения пользователя из телеграмма
     :return: обновленный профиль
     """
+    # TODO
     pass
 
 
@@ -251,6 +253,7 @@ def get_random_api_key() -> str:
 if __name__ == '__main__':
     print("Bot started")
     # helpers.initialize_main_menu()
+    bot.send_message(chat_id=TG_USER_ID, text="Start text")
     bot.polling(none_stop=True)
     # generate_answer_from_chat_gpt()
     print("Bot finished")
