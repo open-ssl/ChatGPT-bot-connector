@@ -23,6 +23,10 @@ class BotMessage:
                                    "restrictions\n\nUse command /buy_subscription"
     MY_PROFILE_INFO_WITH_SUB_TEXT = "Count of tokens: ∞\nYour subscription expired at: {}"
     TYPE_TEXT = "Type question for Chat GPT in English"
+    ABOUT_BOT_TEXT = "Bot uses ChatGPT-4 language model that creates by OpenAI company\n" \
+                     "Your dialog directs to model by closed API connection, that protects total security for your " \
+                     "data\nPlease, don't use sensetive data for bot's working\n" \
+                     "If you got some errors you could write an author for that bot for any details"
     WAITING_ANSWER_FROM_GPT = "\nWaiting answer from Chat GPT\n"
     ANSWER_FROM_GPT = "Answer from Chat GPT:\n\n"
     ANOTHER_QUESTION = "You can ask another one querstion right in this dialog\n" \

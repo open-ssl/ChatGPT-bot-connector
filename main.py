@@ -201,6 +201,19 @@ def start_bot_command_handler(message):
     return bot.send_message(user_chat_id, locale_object.TYPE_TEXT)
 
 
+@bot.message_handler(func=helpers.about_bot_validator)
+def about_bot_command_handler(message):
+    """
+    Нажали на команду о боте
+    :param message: обьект сообщения бота
+    :return:
+    """
+    user_chat_id = message.chat.id
+    locale_object = get_localisation_for_user(user_chat_id)
+    keyboard = get_main_menu_keyboard(locale_object)
+    return bot.send_message(user_chat_id, locale_object.ABOUT_BOT_TEXT, reply_markup=keyboard)
+
+
 @bot.message_handler(func=helpers.write_chat_gpt_command_validator)
 def answer_user_after_request(message):
     user_chat_id = message.chat.id

@@ -301,6 +301,17 @@ def write_author_validator(text) -> bool:
     ]
 
 
+def about_bot_validator(text) -> bool:
+    """
+    Проверка сообщения на придлежность к команде /about
+    :param text: обьект сообщения
+    :return: bool - ожидаем команду write_author?
+    """
+    return text.html_text in [
+        BotMessageEn.ABOUT, BotMessageRu.ABOUT, f'/{BotCommands.ABOUT}'
+    ]
+
+
 def unknown_command_validator(message) -> bool:
     """
     Проверка сообщения, на несоответствие какой-либо команде,
