@@ -289,6 +289,7 @@ def my_profile_command_validator(text) -> bool:
         f'/{BotCommands.PROFILE}'
     ]
 
+
 def write_author_validator(text) -> bool:
     """
     Проверка сообщения на принадлежность к команде /write_author

@@ -255,9 +255,13 @@ def write_author_request(message):
     user_chat_id = message.chat.id
     cache_client.set(str(user_chat_id), helpers.CachePhase.DEFAULT_DIALOG)
     locale_object = get_localisation_for_user(user_chat_id)
-    keyboard = author_inline_keyboard(locale_object)
+    inline_keyboard = author_inline_keyboard(locale_object)
+    main_keyboard = get_main_menu_keyboard(locale_object)
+
     write_author_text = locale_object.WRITE_AUTHOR_TEXT
-    return bot.send_message(user_chat_id, write_author_text, reply_markup=keyboard)
+    main_menu_text= locale_object.MAIN_MENU
+    bot.send_message(user_chat_id, write_author_text, reply_markup=inline_keyboard)
+    return bot.send_message(user_chat_id, main_menu_text, reply_markup=main_keyboard,)
 
 
 @bot.message_handler(func=helpers.unknown_command_validator)
