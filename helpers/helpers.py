@@ -56,6 +56,7 @@ class Const:
     ACTIVITY_STATUS = 'activity_status'
     EXPIRED_AT = 'expired_at'
     TOKENS = 'tokens'
+    HTML_PARSE_MODE = 'HTML'
 
 
 class CachePhase:
@@ -343,6 +344,17 @@ def about_bot_validator(text) -> bool:
     """
     return text.html_text in [
         BotMessageEn.ABOUT, BotMessageRu.ABOUT, f'/{BotCommands.ABOUT}'
+    ]
+
+
+def buy_subscription_validator(text) -> bool:
+    """
+    Проверка сообщения на придлежность к команде /buy_subscription
+    :param text: обьект сообщения
+    :return: bool - ожидаем команду buy_subscription?
+    """
+    return text.html_text in [
+        BotMessageEn.BUY_SUBSCRIPTION, BotMessageRu.BUY_SUBSCRIPTION, f'/{BotCommands.BUY_SUBSCRIPTION}'
     ]
 
 

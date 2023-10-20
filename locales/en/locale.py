@@ -23,7 +23,19 @@ class BotMessage:
                                    "\n\nUse command /buy_subscription"
     MY_PROFILE_INFO_WITH_SUB_TEXT = "Count of tokens: ∞\nYour subscription expired at: {}"
     TYPE_TEXT = "Type question for Chat GPT in English"
-    ABOUT_BOT_TEXT = "Bot uses ChatGPT-3.5-turbo language model that was created by OpenAI company\n\n" \
+    ABOUT_BOT_TEXT = "How does this bot work?\n" \
+                     "By default, your subscription includes <b>{}</b> free tokens, which you can use within <b>1 " \
+                     "week</b>.\n\n" \
+                     "Tokens <b>=</b>\n" \
+                     "Amount of characters in your question for GPT\n" \
+                     "<b>+</b>\n" \
+                     "Number of characters in your response from GPT\n\n" \
+                     "After the number of free tokens expires, <b>You will not be able to use the bot for 1 week</b>, " \
+                     "i.e. until new free tokens are credited.\n" \
+                     "However, you can buy a monthly subscription, which will give you <b>unlimited communication with " \
+                     "GPT</b>\n\n" \
+                     "<b>Buy a subscription: /buy_subscription</b>\n\n" \
+                     "This bot uses ChatGPT-3.5-turbo language model that was created by OpenAI company\n\n" \
                      "Your dialog directs to model by closed API connection, that protects total security of your " \
                      "data\n\nNevertheless please, don't use sensetive data during work with bot\n\n" \
                      "If you got some errors you could write to author of this bot with command /help for any details"
@@ -44,7 +56,13 @@ class BotMessage:
                        "deterministic. \nIncreasing precision of generation will result in more diverse " \
                        "completions.\n\nThe value 6 is a good default value for generating unique results by model "
     EXPIRED_SUBSCRIPTION_TEXT = "There are <b>no tokens</b> at your balance.\n\nPlease buy subscription for continue " \
-                                "using this bot "
+                                "using this bot"
+    BUY_SUBSCRIPTION_TEXT = "A subscription to unlimited use the bot costs <b>2 USDT per month</b>\n\n"\
+                            "The subscription includes:\n" \
+                            "- Unlimited amount of requests in Telegram-Bot\n" \
+                            "- Unlimited amount of tokens used when making a request to GPT\n" \
+                            "- Access to a private chat to discuss the best strategies for using GPT\n\n" \
+                            "If you want to buy subscription please, contact to author for getting some details."
 
     @classmethod
     def get_unique_methods(cls):

@@ -131,13 +131,12 @@ def get_text_for_profile(user_id, locale_object):
     :return:
     """
     base_profile_text = locale_object.MY_PROFILE_TEXT
-    activity_and_tokens_info = fetch_data_from_db(sql_templates.GET_ACTIVITY_AND_TOKENS_FOR_USER, user_id)
 
-    has_subscription = activity_and_tokens_info.get(Const.ACTIVITY_STATUS)
+    activity_and_tokens_info = fetch_data_from_db(sql_templates.GET_ACTIVITY_AND_TOKENS_FOR_USER, user_id)
     tokens = int(activity_and_tokens_info.get(Const.TOKENS))
 
-    if has_subscription:
-        # получить дату истечения подписки
+    if is_subscription_active_for_user(user_id):
+        # todo получить дату истечения подписки
         base_profile_text += locale_object.MY_PROFILE_INFO_WITH_SUB_TEXT
     else:
         # получить количество оставшихся токенов

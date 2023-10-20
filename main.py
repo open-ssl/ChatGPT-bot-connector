@@ -18,6 +18,8 @@ from db_helpers.db_helpers import (
     get_text_for_profile
 )
 from helpers.helpers import (
+    Const,
+    Config,
     BotCommands,
     get_main_menu_keyboard,
     get_profile_info_back_keyboard,
@@ -75,7 +77,7 @@ def set_language_command(message):
         chat_id=user_chat_id,
         message_id=message_id,
         reply_markup=keyboard,
-        parse_mode='HTML'
+        parse_mode=Const.HTML_PARSE_MODE
     )
 
 
@@ -149,7 +151,7 @@ def show_parameters_info(message):
         chat_id=user_chat_id,
         text=locale_object.TEMPERATURE_TEXT,
         reply_markup=keyboard,
-        parse_mode='HTML'
+        parse_mode=Const.HTML_PARSE_MODE
     )
 
 
@@ -204,11 +206,30 @@ def start_conversation_command_handler(message):
             user_chat_id,
             locale_object.EXPIRED_SUBSCRIPTION_TEXT,
             reply_markup=get_menu_after_subscription_expired_keyboard(locale_object),
-            parse_mode='HTML'
+            parse_mode=Const.HTML_PARSE_MODE
         )
 
     cache_client.set(str(user_chat_id), helpers.CachePhase.WRITE_TEXT_FOR_GPT)
     return bot.send_message(user_chat_id, locale_object.TYPE_TEXT)
+
+
+@bot.message_handler(func=helpers.buy_subscription_validator)
+def buy_subscription_handler(message):
+    """
+    Нажали на купить подписку
+    :param message: обьект сообщения бота
+    :return:
+    """
+    user_chat_id = message.chat.id
+    locale_object = get_localisation_for_user(user_chat_id)
+    inline_keyboard = author_inline_keyboard(locale_object)
+    bot.send_message(
+        user_chat_id,
+        locale_object.BUY_SUBSCRIPTION_TEXT,
+        reply_markup=inline_keyboard,
+        parse_mode=Const.HTML_PARSE_MODE
+    )
+    return bot.send_message(user_chat_id, locale_object.MAIN_MENU, reply_markup=get_main_menu_keyboard(locale_object))
 
 
 @bot.message_handler(func=helpers.about_bot_validator)
@@ -221,7 +242,12 @@ def about_bot_command_handler(message):
     user_chat_id = message.chat.id
     locale_object = get_localisation_for_user(user_chat_id)
     keyboard = get_main_menu_keyboard(locale_object)
-    return bot.send_message(user_chat_id, locale_object.ABOUT_BOT_TEXT, reply_markup=keyboard)
+    return bot.send_message(
+        user_chat_id,
+        locale_object.ABOUT_BOT_TEXT.format(Config.DEFAULT_TOKENS_COUNT),
+        reply_markup=keyboard,
+        parse_mode=Const.HTML_PARSE_MODE
+    )
 
 
 @bot.message_handler(func=helpers.write_chat_gpt_command_validator)
@@ -273,7 +299,12 @@ def my_profile_request(message):
     keyboard = get_profile_keyboard(profile_buttons)
 
     profile_text = get_text_for_profile(user_chat_id, locale_object)
-    return bot.send_message(user_chat_id, profile_text, reply_markup=keyboard, parse_mode='HTML')
+    return bot.send_message(
+        user_chat_id,
+        profile_text,
+        reply_markup=keyboard,
+        parse_mode=Const.HTML_PARSE_MODE
+    )
 
 
 @bot.message_handler(func=helpers.write_author_validator)
@@ -286,12 +317,10 @@ def write_author_request(message):
     cache_client.set(str(user_chat_id), helpers.CachePhase.DEFAULT_DIALOG)
     locale_object = get_localisation_for_user(user_chat_id)
     inline_keyboard = author_inline_keyboard(locale_object)
-    main_keyboard = get_main_menu_keyboard(locale_object)
 
     write_author_text = locale_object.WRITE_AUTHOR_TEXT
-    main_menu_text= locale_object.MAIN_MENU
     bot.send_message(user_chat_id, write_author_text, reply_markup=inline_keyboard)
-    return bot.send_message(user_chat_id, main_menu_text, reply_markup=main_keyboard)
+    return bot.send_message(user_chat_id, locale_object.MAIN_MENU, reply_markup=get_main_menu_keyboard(locale_object))
 
 
 @bot.message_handler(func=helpers.help_command_validator)
