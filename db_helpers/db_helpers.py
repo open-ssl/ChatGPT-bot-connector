@@ -134,13 +134,14 @@ def get_text_for_profile(user_id, locale_object):
     activity_and_tokens_info = fetch_data_from_db(sql_templates.GET_ACTIVITY_AND_TOKENS_FOR_USER, user_id)
 
     has_subscription = activity_and_tokens_info.get(Const.ACTIVITY_STATUS)
-    tokens = activity_and_tokens_info.get(Const.TOKENS)
+    tokens = int(activity_and_tokens_info.get(Const.TOKENS))
 
     if has_subscription:
         # получить дату истечения подписки
         base_profile_text += locale_object.MY_PROFILE_INFO_WITH_SUB_TEXT
     else:
         # получить количество оставшихся токенов
+        tokens = tokens if tokens > 0 else 0
         base_profile_text += locale_object.MY_PROFILE_INFO_NOT_SUB_TEXT.format(tokens)
 
     return base_profile_text
