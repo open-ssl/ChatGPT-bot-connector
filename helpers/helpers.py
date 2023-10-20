@@ -94,7 +94,7 @@ class BotCommands:
             cls.START: locale_obj.START_CONVERSATION,
             cls.PROFILE: locale_obj.PROFILE,
             cls.BUY_SUBSCRIPTION: locale_obj.BUY_SUBSCRIPTION,
-            cls.WRITE_AUTHOR: locale_obj.WRITE_AUTHOR,
+            cls.ABOUT: locale_obj.ABOUT,
         }
 
     @classmethod
