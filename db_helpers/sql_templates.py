@@ -15,15 +15,21 @@ GET_DATA_FOR_PROFILE_KEYBOARD_TEMPLATE = """
     ) from users where user_id = {}
 """
 
+GET_TEMPERATURE_FOR_USER_TEMPLATE = """
+    select json_build_object(
+        'temperature', temperature
+    ) from users where user_id = {}
+"""
+
 INSERT_NEW_USER_IN_DB_TEMPLATE = """
     INSERT INTO users VALUES(
-    	{}, {}, {}, {}, {}, current_timestamp, {}
+    {}, {}, {}, {}, {}, {}, current_timestamp
     )
 """
 
 INSERT_NEW_SUB_INFO_IN_DB_TEMPLATE = """
     INSERT INTO sub_info VALUES(
-    	{}, 0, current_timestamp, NULL, 0, 50000
+    {}, 0, current_timestamp, NULL, 0, 50000
     )
 """
 

@@ -140,3 +140,14 @@ def get_text_for_profile(user_id, locale_object):
         base_profile_text += locale_object.MY_PROFILE_INFO_NOT_SUB_TEXT.format(tokens)
 
     return base_profile_text
+
+
+def get_temperature_for_user(user_id):
+    """
+    Получение значения температуры у пользователя
+    :param user_id:
+    :return:
+    """
+    temperature_data = fetch_data_from_db(sql_templates.GET_TEMPERATURE_FOR_USER_TEMPLATE, user_id)
+    return temperature_data.get(Const.TEMPERATURE)
+

@@ -57,7 +57,7 @@ class BotCommands:
     Команды бота
     """
     START = 'start'
-    START_BOT = 'start_bot'
+    START_BOT = 'start_conversation'
     MAIN_MENU = 'main_menu'
     PROFILE = 'my_profile'
     BUY_SUBSCRIPTION = 'buy_subscription'

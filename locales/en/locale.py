@@ -18,12 +18,12 @@ class BotMessage:
     BUY_SUBSCRIPTION = "Buy subscription"
     WRITE_AUTHOR = 'Write to author'
     WRITE_AUTHOR_TEXT = "Author's contact:"
-    MY_PROFILE_TEXT = "Your profile:\n Press any button to change the value\n\n"
-    MY_PROFILE_INFO_NOT_SUB_TEXT = "Count of tokens: <b>{}</b>\nBuy a subscription to use the bot without " \
-                                   "restrictions\n\nUse command /buy_subscription"
+    MY_PROFILE_TEXT = "Your profile:\nPress any button to change the value\n\n"
+    MY_PROFILE_INFO_NOT_SUB_TEXT = "Count of tokens: <b>{}</b>\n<b>Buy subscription for non-limiting  bot usage</b>" \
+                                   "\n\nUse command /buy_subscription"
     MY_PROFILE_INFO_WITH_SUB_TEXT = "Count of tokens: ∞\nYour subscription expired at: {}"
     TYPE_TEXT = "Type question for Chat GPT in English"
-    ABOUT_BOT_TEXT = "Bot uses ChatGPT-4 language model that creates by OpenAI company\n" \
+    ABOUT_BOT_TEXT = "Bot uses ChatGPT-3.5-turbo language model that creates by OpenAI company\n" \
                      "Your dialog directs to model by closed API connection, that protects total security for your " \
                      "data\nPlease, don't use sensetive data for bot's working\n" \
                      "If you got some errors you could write an author for that bot for any details"

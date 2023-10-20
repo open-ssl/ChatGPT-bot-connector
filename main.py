@@ -1,12 +1,14 @@
 import time
 
+import openai
 from decimal import Decimal
 from random import randint
 from threading import Thread
 
 from bot_config import bot, cache_client, KEY_LIST
-from config import TG_USER_ID
+from config import ADMIN_TG_ID, ORGANISATION_ID
 from helpers import helpers
+from bot_config import CHAT_GPT_MODEL_NAME
 from db_helpers.db_helpers import (
     initialise_user_if_need,
     generate_buttons_for_profile_menu_keyboard,
@@ -21,6 +23,7 @@ from helpers.helpers import (
     get_profile_info_back_keyboard,
     get_menu_after_write_keyboard,
     get_profile_keyboard,
+    get_temperature_for_user,
     author_inline_keyboard,
     log_error_in_file,
 )
@@ -234,7 +237,7 @@ def answer_user_after_request(message):
     time.sleep(0.5)
     bot.edit_message_text(text=result_text, chat_id=user_chat_id, message_id=msg.message_id)
 
-    answer_from_chat_gpt = generate_answer_from_chat_gpt('Please come up with five names for the grocery store')
+    answer_from_chat_gpt = generate_answer_from_chat_gpt(user_chat_id, message.html_text)
     keyboard = get_menu_after_write_keyboard(locale_object)
     bot.send_message(user_chat_id, answer_from_chat_gpt)
     return bot.send_message(user_chat_id, locale_object.ANOTHER_QUESTION, reply_markup=keyboard)
@@ -305,15 +308,31 @@ def remove_message(user_chat_id, message_id) -> None:
         log_error_in_file()
 
 
-def generate_answer_from_chat_gpt(request_text):
+def generate_answer_from_chat_gpt(user_id, request_text):
     """
     Получить ответ от Chat GPT
-    :param request_text: текст запроса к Chat GPT по английски
+    :param user_id: идентификатор пользователя
+    :param request_text: текст запроса к Chat-GPT
     :return:
     """
     # 'gpt-3.5-turbo'
+    res_rext = "Something went wrong"
+    try:
+        real_response = openai.Completion.create(
+            api_key=get_random_api_key(),
+            organization=ORGANISATION_ID,
+            model=CHAT_GPT_MODEL_NAME,
+            prompt=request_text,
+            temperature=get_temperature_for_user(user_id)
+        )
+        # sample_text = '\n\n1. Fresh Groceries\n2. Green Markets\n3. Supermarket Express\n4. Corner Pantry\n5. The Grocery Cart'
+        res_rext = real_response.choices[0].text
+        # записать количество токенов для пользователя в базу
+        # real_response.usage.total_tokens
+    except Exception as e:
+        log_error_in_file()
 
-    return '\n\n1. Fresh Groceries\n2. Green Markets\n3. Supermarket Express\n4. Corner Pantry\n5. The Grocery Cart'
+    return res_rext
 
 
 def get_random_api_key() -> str:
@@ -329,7 +348,9 @@ def get_random_api_key() -> str:
 if __name__ == '__main__':
     print("Bot started")
     # helpers.initialize_main_menu()
-    bot.send_message(chat_id=TG_USER_ID, text="Start text")
+    bot.send_message(chat_id=ADMIN_TG_ID, text="Start text")
     bot.polling(none_stop=True)
+    # while True:
+    #     bot.infinity_polling(timeout=10, long_polling_timeout=5)
     # generate_answer_from_chat_gpt()
     print("Bot finished")

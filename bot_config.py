@@ -4,7 +4,7 @@ from googletrans import Translator
 from config import BOT_TOKEN
 
 # CHAT_GPT_MODEL_NAME = "text-davinci-003"
-CHAT_GPT_MODEL_NAME = 'gpt-3.5-turbo'
+CHAT_GPT_MODEL_NAME = 'gpt-3.5-turbo-instruct'
 
 MODEL_TEMPERATURE_COMMENT = """
 Remember that the model predicts which text is most likely to follow the text preceding it.\n 
@@ -15,13 +15,24 @@ Increasing temperature will result in more diverse completions.
 """
 
 
-KEY_LIST = []
+KEY_LIST = [
+    "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",
+    "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",
+    "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"
+]
 
 
 cache_client = base.Client(('localhost', 11211))
 bot = telebot.TeleBot(BOT_TOKEN)
 translator = Translator()
 
+
+def get_translator():
+    """
+    Обьект переводчика
+    :return:
+    """
+    return translator
 
 # bot real answer
 #

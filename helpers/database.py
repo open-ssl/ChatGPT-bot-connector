@@ -1,6 +1,6 @@
 import psycopg2
 
-from config import DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER
+from config import DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER, DB_SCHEME
 
 
 def get_db_session() -> psycopg2.connect:
@@ -13,7 +13,8 @@ def get_db_session() -> psycopg2.connect:
         password=DB_PASS,
         host=DB_HOST,
         port=DB_PORT,
-        database=DB_NAME
+        database=DB_NAME,
+        options="-c search_path=dbo,{}".format(DB_SCHEME)
     )
 
 
