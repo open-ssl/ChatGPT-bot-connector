@@ -1,9 +1,13 @@
+from time import time as now_time
 from helpers.database import fetch_data_from_db, insert_data_in_db
 from helpers.helpers import (
+    SubscriptionStatus,
     Const,
+    Config,
     BotCommands,
     Locale,
-    log_error_in_file
+    log_error_in_file,
+    get_timestamp_from_datetime
 )
 from db_helpers import sql_templates
 from locales.main import get_language_object_by_locale
@@ -46,14 +50,14 @@ def create_new_user_in_db(message) -> bool:
     last_name = "\'{}\'".format(message.chat.last_name or '')
     username = "\'{}\'".format(message.chat.username or '')
     language = "\'{}\'".format(Locale.ENGLISH)
-    temperature = Const.DEFAULT_TEMPERATURE_FOR_USER
+    temperature = Config.DEFAULT_TEMPERATURE_FOR_USER
 
     try:
         insert_data_in_db(
             sql_templates.INSERT_NEW_USER_IN_DB_TEMPLATE,
             user_id, first_name, last_name, username, language, temperature
         )
-        insert_data_in_db(sql_templates.INSERT_NEW_SUB_INFO_IN_DB_TEMPLATE, user_id)
+        insert_data_in_db(sql_templates.INSERT_NEW_SUB_INFO_IN_DB_TEMPLATE, user_id, Config.DEFAULT_TOKENS_COUNT)
     except Exception as e:
         log_error_in_file()
         operation_result = False
@@ -150,4 +154,64 @@ def get_temperature_for_user(user_id):
     """
     temperature_data = fetch_data_from_db(sql_templates.GET_TEMPERATURE_FOR_USER_TEMPLATE, user_id)
     return temperature_data.get(Const.TEMPERATURE)
+
+
+def set_new_tokens_count_for_user(user_id, response_tokens):
+    """
+    Изменяем количество использованных пользователем токенов в базе данных
+    :param user_id: идентификатор пользователя
+    :param response_tokens: количество токенов пользователя которое он использовал в текущем респонсе
+    :return:
+    """
+    user_info = fetch_data_from_db(sql_templates.GET_TOKENS_FOR_USER_TEMPLATE, user_id)
+    activity_status = user_info.get(Const.ACTIVITY_STATUS)
+    tokens_count = int(user_info.get(Const.TOKENS))
+
+    if activity_status == SubscriptionStatus.UNACTIVE:
+        new_tokens_count = int(tokens_count) - response_tokens
+        insert_data_in_db(sql_templates.UPDATE_TOKENS_COUNT_FOR_USER_TEMPLATE, new_tokens_count, user_id)
+
+
+def is_subscription_active_for_user(user_id):
+    """
+    Проверка наличия подписки у пользователя
+    :param user_id: идентификатор пользователя
+    :return: bool - активна ли подписка?
+    """
+
+    user_info = fetch_data_from_db(sql_templates.GET_INFO_FOR_USER_TEMPLATE, user_id)
+    activity_status = user_info.get(Const.ACTIVITY_STATUS)
+    expired_at = get_timestamp_from_datetime(user_info.get(Const.EXPIRED_AT))
+    tokens_count = int(user_info.get(Const.TOKENS))
+
+    if activity_status == SubscriptionStatus.UNACTIVE and tokens_count <= 0:
+        return False
+
+    if activity_status == SubscriptionStatus.ACTIVE:
+        if now_time() > expired_at:
+            set_unactive_subscription_for_user(user_id)
+            return False
+
+    return True
+
+
+def set_unactive_subscription_for_user(user_id):
+    """
+    Устанавливаем подписку пользользователя в неактивное состояние
+    :return:
+    """
+    insert_data_in_db(
+        sql_templates.UPDATE_SUBSCRIPTION_STATUS_FOR_USER_TEMPLATE, SubscriptionStatus.UNACTIVE, 0, user_id
+    )
+
+
+def set_active_subscription_for_user(user_id):
+    """
+    Устанавливаем активное состояние подписки для пользователя
+    :param user_id:
+    :return:
+    """
+    insert_data_in_db(
+        sql_templates.UPDATE_SUBSCRIPTION_STATUS_FOR_USER_TEMPLATE, SubscriptionStatus.ACTIVE, Config.DEFAULT_TOKENS_COUNT, user_id
+    )
 

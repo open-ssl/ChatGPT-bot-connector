@@ -7,7 +7,7 @@ class BotMessage:
     MAIN_MENU_TEXT = 'Edit your profile and start to chat with Chat GPT'
     HELP = 'Help'
     ABOUT = 'About bot'
-    START_BOT = 'Start dialog with Сhat GPT'
+    START_CONVERSATION = 'Start dialog with Сhat-GPT'
     PROFILE = 'My profile'
     MAIN_MENU = 'Main menu'
     LANGUAGE = 'Bot language: '
@@ -29,7 +29,7 @@ class BotMessage:
                      "If you got some errors you could write an author for that bot for any details"
     WAITING_ANSWER_FROM_GPT = "\nWaiting answer from Chat GPT\n"
     ANSWER_FROM_GPT = "Answer from Chat GPT:\n\n"
-    ANOTHER_QUESTION = "You can ask another one querstion right in this dialog\n" \
+    ANOTHER_QUESTION = "\n\nYou can ask another one querstion right in this dialog\n" \
                        "If you would change preferences You could press \"Main menu\" button"
     UNKNOWN_COMMAND = "Unknown command\nTry again"
     TYPE_TEMPERATURE_TEXT = "Enter the generation accuracy value.\nThe value must be an integer from 1 to 10 " \
@@ -43,6 +43,8 @@ class BotMessage:
                        "temperature means it will take fewer risks, and completions \nwill be more accurate and " \
                        "deterministic. \nIncreasing precision of generation will result in more diverse " \
                        "completions.\n\nThe value 6 is a good default value for generating unique results by model "
+    EXPIRED_SUBSCRIPTION_TEXT = "There are <b>no tokens</b> at your balance.\n\nPlease buy subscription for continue " \
+                                "using this bot "
 
     @classmethod
     def get_unique_methods(cls):

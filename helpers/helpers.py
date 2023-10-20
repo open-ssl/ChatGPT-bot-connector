@@ -1,6 +1,8 @@
 import sys
+import ciso8601
 from datetime import date, datetime
 from telebot import types
+from time import mktime
 
 import bot_config
 from bot_config import cache_client
@@ -38,11 +40,21 @@ class Locale:
         }.get(prefix)
 
 
-class Const:
+class SubscriptionStatus:
+    UNACTIVE = 0
+    ACTIVE = 1
+
+
+class Config:
+    DEFAULT_TOKENS_COUNT = 50000
     DEFAULT_TEMPERATURE_FOR_USER = 0.6
+
+
+class Const:
     TEMPERATURE = 'temperature'
     LANGUAGE = 'language'
     ACTIVITY_STATUS = 'activity_status'
+    EXPIRED_AT = 'expired_at'
     TOKENS = 'tokens'
 
 
@@ -57,7 +69,7 @@ class BotCommands:
     Команды бота
     """
     START = 'start'
-    START_BOT = 'start_conversation'
+    START_CONVERSATION = 'start_conversation'
     MAIN_MENU = 'main_menu'
     PROFILE = 'my_profile'
     BUY_SUBSCRIPTION = 'buy_subscription'
@@ -78,7 +90,7 @@ class BotCommands:
     @classmethod
     def get_menu_commands(cls, locale_obj):
         return {
-            cls.START: locale_obj.START_BOT,
+            cls.START: locale_obj.START_CONVERSATION,
             cls.PROFILE: locale_obj.PROFILE,
             cls.BUY_SUBSCRIPTION: locale_obj.BUY_SUBSCRIPTION,
             cls.WRITE_AUTHOR: locale_obj.WRITE_AUTHOR,
@@ -87,6 +99,13 @@ class BotCommands:
     @classmethod
     def get_menu_after_dialog_commands(cls, locale_object):
         return {
+            cls.MAIN_MENU: locale_object.MAIN_MENU
+        }
+
+    @classmethod
+    def get_menu_after_subscription_expired(cls, locale_object):
+        return {
+            cls.BUY_SUBSCRIPTION: locale_object.BUY_SUBSCRIPTION,
             cls.MAIN_MENU: locale_object.MAIN_MENU
         }
 
@@ -200,10 +219,25 @@ def get_profile_keyboard(profile_buttons: dict):
 def get_menu_after_write_keyboard(locale_object):
     """
     Генерация клавиатуры c меню после отправки ChatGPT
+    :param locale_object: Обьект локали пользователя
     :return: Обьект клавиатуры для вставки в реплай сообщения
     """
     keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
     bot_commands = BotCommands.get_menu_after_dialog_commands(locale_object)
+    for command_text in bot_commands.values():
+        keyboard_button = partial(types.KeyboardButton, text=command_text)
+        keyboard.add(keyboard_button())
+    return keyboard
+
+
+def get_menu_after_subscription_expired_keyboard(locale_object):
+    """
+    Получение клавиатуры, после того как подписка кончилась
+    :param locale_object: Обьект локали пользователя
+    :return:  Обьект клавиатуры для вставки в реплай сообщения
+    """
+    keyboard = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+    bot_commands = BotCommands.get_menu_after_subscription_expired(locale_object)
     for command_text in bot_commands.values():
         keyboard_button = partial(types.KeyboardButton, text=command_text)
         keyboard.add(keyboard_button())
@@ -229,7 +263,7 @@ def initialize_main_menu():
     bot = bot_config.bot
     bot.set_my_commands(commands=[
         types.BotCommand(BotCommands.START, BotCommands.START_DESCRIPTION),
-        types.BotCommand(BotCommands.START_BOT, BotCommands.START_BOT_DESCRIPTION),
+        types.BotCommand(BotCommands.START_CONVERSATION, BotCommands.START_BOT_DESCRIPTION),
         types.BotCommand(BotCommands.ABOUT, BotCommands.ABOUT_DESCRIPTION),
         types.BotCommand(BotCommands.HELP, BotCommands.HELP_DESCRIPTION),
     ])
@@ -239,7 +273,7 @@ def initialize_main_menu():
 
 def main_menu_bot_command_validator(text) -> bool:
     """
-    Проверка сообщения на принадлежность к команде /start
+    Проверка сообщения на принадлежность к команде /main_menu
     Директ в главное меню
     :param text: обьект сообщения
     :return: bool - ожидаем команду start?
@@ -247,14 +281,14 @@ def main_menu_bot_command_validator(text) -> bool:
     return text.html_text in get_unique_methods()
 
 
-def start_bot_command_validator(text) -> bool:
+def start_conversation_command_validator(text) -> bool:
     """
-    Проверка сообщения на принадлежность к команде /start_bot
+    Проверка сообщения на принадлежность к команде /start_conversation
     :param text: обьект сообщения
-    :return: bool - ожидаем команду start_bot?
+    :return: bool - ожидаем команду start_conversation?
     """
 
-    return text.html_text in [BotMessageRu.START_BOT, BotMessageEn.START_BOT, f'/{BotCommands.START_BOT}']
+    return text.html_text in [BotMessageRu.START_CONVERSATION, BotMessageEn.START_CONVERSATION, f'/{BotCommands.START_CONVERSATION}']
 
 
 def write_chat_gpt_command_validator(message) -> bool:
@@ -323,3 +357,15 @@ def unknown_command_validator(message) -> bool:
     command = message.html_text
     command_phase = cache_client.get(str(chat_id))
     return not command_phase or command_phase == b'0' and command not in get_unique_methods()
+
+
+def get_timestamp_from_datetime(datetime_str: str):
+    """
+    Получаем timestamp из строкового datetime
+    для сравнения с нормативным при обновлении
+    :param datetime_str: строковое представление для datetime
+    f.e. 2023-04-11T22:43:00.000Z
+    :return: (int) timestamp
+    """
+    ts_from_datetime = ciso8601.parse_datetime(datetime_str)
+    return int(mktime(ts_from_datetime.timetuple()))

@@ -22,8 +22,8 @@ from helpers.helpers import (
     get_main_menu_keyboard,
     get_profile_info_back_keyboard,
     get_menu_after_write_keyboard,
+    get_menu_after_subscription_expired_keyboard,
     get_profile_keyboard,
-    get_temperature_for_user,
     author_inline_keyboard,
     log_error_in_file,
 )
@@ -190,17 +190,24 @@ def show_main_menu_command(message):
     return bot.send_message(message.chat.id, result_message, reply_markup=keyboard)
 
 
-@bot.message_handler(func=helpers.start_bot_command_validator)
-def start_bot_command_handler(message):
+@bot.message_handler(func=helpers.start_conversation_command_validator)
+def start_conversation_command_handler(message):
     """
-    Нажали на запуск бота
+    Нажали на запуск общения с ботом GPT
     :param message: обьект сообщения бота
     :return:
     """
     user_chat_id = message.chat.id
     locale_object = get_localisation_for_user(user_chat_id)
-    cache_client.set(str(user_chat_id), helpers.CachePhase.WRITE_TEXT_FOR_GPT)
+    if not is_subscription_active_for_user(user_chat_id):
+        return bot.send_message(
+            user_chat_id,
+            locale_object.EXPIRED_SUBSCRIPTION_TEXT,
+            reply_markup=get_menu_after_subscription_expired_keyboard(locale_object),
+            parse_mode='HTML'
+        )
 
+    cache_client.set(str(user_chat_id), helpers.CachePhase.WRITE_TEXT_FOR_GPT)
     return bot.send_message(user_chat_id, locale_object.TYPE_TEXT)
 
 
@@ -219,9 +226,15 @@ def about_bot_command_handler(message):
 
 @bot.message_handler(func=helpers.write_chat_gpt_command_validator)
 def answer_user_after_request(message):
+    """
+    Ответ пользователю от Chat-GPT после ввода информации
+    :param message: обьект сообщения от пользователя
+    :return:
+    """
     user_chat_id = message.chat.id
-    start_param = '=' * 5
     locale_object = get_localisation_for_user(user_chat_id)
+    start_param = '=' * 5
+
     base_text = locale_object.WAITING_ANSWER_FROM_GPT
     result_text = locale_object.ANSWER_FROM_GPT
     msg = bot.send_message(user_chat_id, start_param + base_text + start_param)
@@ -239,8 +252,9 @@ def answer_user_after_request(message):
 
     answer_from_chat_gpt = generate_answer_from_chat_gpt(user_chat_id, message.html_text)
     keyboard = get_menu_after_write_keyboard(locale_object)
-    bot.send_message(user_chat_id, answer_from_chat_gpt)
-    return bot.send_message(user_chat_id, locale_object.ANOTHER_QUESTION, reply_markup=keyboard)
+    return bot.send_message(
+        user_chat_id, answer_from_chat_gpt + locale_object.ANOTHER_QUESTION, reply_markup=keyboard
+    )
 
 
 @bot.message_handler(func=helpers.my_profile_command_validator)

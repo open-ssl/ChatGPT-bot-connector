@@ -1,6 +1,6 @@
 CHECK_USER_IN_DB_TEMPLATE = """
     select exists (
-    	select 1 from users where user_id = {}
+    select 1 from users where user_id = {}
     ) 
 """
 
@@ -29,7 +29,7 @@ INSERT_NEW_USER_IN_DB_TEMPLATE = """
 
 INSERT_NEW_SUB_INFO_IN_DB_TEMPLATE = """
     INSERT INTO sub_info VALUES(
-    {}, 0, current_timestamp, NULL, 0, 50000
+    {}, 0, current_timestamp, NOW() + interval '7 days', 0, {}
     )
 """
 
@@ -46,4 +46,29 @@ GET_ACTIVITY_AND_TOKENS_FOR_USER = """
         'activity_status', activity_status, 
         'tokens', tokens
     ) from sub_info where user_id = {}
+"""
+
+GET_TOKENS_FOR_USER_TEMPLATE = """
+    select json_build_object(
+        'tokens', tokens
+    ) from sub_info where user_id = {}
+"""
+
+
+GET_INFO_FOR_USER_TEMPLATE = """
+    select json_build_object(
+        'activity_status', activity_status,
+        'expired_at', expired_at,
+        'tokens', tokens
+    ) from sub_info where user_id = {}
+"""
+
+
+UPDATE_TOKENS_COUNT_FOR_USER_TEMPLATE = """
+    UPDATE sub_info SET tokens={} WHERE user_id = {}
+"""
+
+
+UPDATE_SUBSCRIPTION_STATUS_FOR_USER_TEMPLATE = """
+    UPDATE sub_info SET activity_status={}, tokens={} WHERE user_id = {}
 """

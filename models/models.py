@@ -1,4 +1,5 @@
 from config import DB_SCHEME
+from helpers.helpers import Config
 
 from sqlalchemy import (
     MetaData, Column, Table, Integer, Float, String, DateTime
@@ -26,7 +27,7 @@ sub_info = Table(
     Column("started_at", DateTime, nullable=False),
     Column("expired_at", DateTime, nullable=True),
     Column("request_count", Integer, default=0),
-    Column("tokens", Integer, default=50000),
+    Column("tokens", Integer, default=Config.DEFAULT_TOKENS_COUNT),
 )
 
 sub_archive = Table(
