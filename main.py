@@ -291,7 +291,16 @@ def write_author_request(message):
     write_author_text = locale_object.WRITE_AUTHOR_TEXT
     main_menu_text= locale_object.MAIN_MENU
     bot.send_message(user_chat_id, write_author_text, reply_markup=inline_keyboard)
-    return bot.send_message(user_chat_id, main_menu_text, reply_markup=main_keyboard,)
+    return bot.send_message(user_chat_id, main_menu_text, reply_markup=main_keyboard)
+
+
+@bot.message_handler(func=helpers.help_command_validator)
+def help_request(message):
+    """
+    Нажали на команду "Помощь"
+    :param message: обьект сообщения телеграмма
+    """
+    return write_author_request(message)
 
 
 @bot.message_handler(func=helpers.unknown_command_validator)
@@ -300,12 +309,14 @@ def unknown_command_handler(message):
     Нажали неизвестную команду не в режиме когда пишем боту
     :param message: обьект сообщения телеграмма
     """
-    user_chat_id = message.chat.id
-    locale_object = get_localisation_for_user(user_chat_id)
-
-    keyboard = get_main_menu_keyboard(locale_object)
-    locale_object = get_localisation_for_user(user_chat_id)
-    return bot.send_message(message.chat.id, locale_object.UNKNOWN_COMMAND, reply_markup=keyboard)
+    # do nothing
+    pass
+    # user_chat_id = message.chat.id
+    # locale_object = get_localisation_for_user(user_chat_id)
+    #
+    # keyboard = get_main_menu_keyboard(locale_object)
+    # locale_object = get_localisation_for_user(user_chat_id)
+    # return bot.send_message(message.chat.id, locale_object.UNKNOWN_COMMAND, reply_markup=keyboard)
 
 
 def remove_message(user_chat_id, message_id) -> None:

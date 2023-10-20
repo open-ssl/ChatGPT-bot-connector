@@ -359,6 +359,17 @@ def unknown_command_validator(message) -> bool:
     return not command_phase or command_phase == b'0' and command not in get_unique_methods()
 
 
+def help_command_validator(text) -> bool:
+    """
+    Проверка сообщения, на соответствие команде /help
+    :param message:
+    :return:
+    """
+    return text.html_text in [
+        BotCommands.HELP, BotMessageRu.HELP, f'/{BotCommands.HELP}'
+    ]
+
+
 def get_timestamp_from_datetime(datetime_str: str):
     """
     Получаем timestamp из строкового datetime
