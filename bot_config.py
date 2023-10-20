@@ -1,7 +1,7 @@
 import telebot
 from pymemcache.client import base
 from googletrans import Translator
-from config import BOT_TOKEN
+from config import BOT_TOKEN, API_KEY1, API_KEY2, API_KEY3
 
 # CHAT_GPT_MODEL_NAME = "text-davinci-003"
 CHAT_GPT_MODEL_NAME = 'gpt-3.5-turbo-instruct'
@@ -15,11 +15,7 @@ Increasing temperature will result in more diverse completions.
 """
 
 
-KEY_LIST = [
-    "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",
-    "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",
-    "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"
-]
+KEY_LIST = [API_KEY1, API_KEY2, API_KEY3]
 
 
 cache_client = base.Client(('localhost', 11211))
