@@ -1,10 +1,10 @@
-from datetime import datetime
+from config import DB_SCHEME
 
 from sqlalchemy import (
     MetaData, Column, Table, Integer, Float, String, DateTime
 )
 
-metadata = MetaData()
+metadata = MetaData(schema=DB_SCHEME)
 
 users = Table(
     "users",
