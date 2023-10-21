@@ -172,6 +172,7 @@ def start_command(message):
     else:
         start_message = locale_object.START_COMMON_TEXT
 
+    start_message += locale_object.ABOUT_START_TEXT
     keyboard = get_main_menu_keyboard(locale_object)
 
     return bot.send_message(message.chat.id, start_message, reply_markup=keyboard)

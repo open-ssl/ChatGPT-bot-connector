@@ -72,3 +72,14 @@ UPDATE_TOKENS_COUNT_FOR_USER_TEMPLATE = """
 UPDATE_SUBSCRIPTION_STATUS_FOR_USER_TEMPLATE = """
     UPDATE sub_info SET activity_status={}, tokens={} WHERE user_id = {}
 """
+
+
+SELECT_USERS_FOR_REFRESH_DEFAULT_SUBSCRIPTION_TEMPLATE = """
+    select json_agg(user_id) from sub_info
+    where activity_status={}
+    and expired_at <= NOW() - interval '7 days'
+"""
+
+UPDATE_DEFAULT_SUBSCRIPTION_STATUS_FOR_USER_TEMPLATE = """
+    UPDATE sub_info SET tokens={}, expired_at=NOW() + interval '7 days' WHERE user_id = {}
+"""

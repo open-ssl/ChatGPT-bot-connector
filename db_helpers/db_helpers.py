@@ -239,3 +239,18 @@ def set_active_subscription_for_user(user_id):
         user_id
     )
 
+
+def get_users_for_refresh_default_subscription():
+    """
+    Получение идентификаторов пользователей, которым необходимо обновить дефолтную подписку
+    :return:
+    """
+    return fetch_data_from_db(sql_templates.SELECT_USERS_FOR_REFRESH_DEFAULT_SUBSCRIPTION_TEMPLATE)
+
+
+def refresh_default_subscription_for_users(data: list):
+    """
+    Множественный апдейт дефолтных подписок для пользователей
+    :return:
+    """
+    update_many_data_in_db(sql_templates.UPDATE_DEFAULT_SUBSCRIPTION_STATUS_FOR_USER_TEMPLATE, data)

@@ -1,6 +1,7 @@
 import psycopg2
 
 from config import DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER, DB_SCHEME
+from threading import Lock
 
 
 def get_db_session() -> psycopg2.connect:
@@ -52,3 +53,20 @@ def insert_data_in_db(query_template, *args):
 
         query_template = query_template.format(*args)
         cursor.execute(query_template)
+
+
+def update_many_data_in_db(query_template, *args):
+    """
+    Запрос в базу данных на вставку большого количества данных
+    :param query_template: шаблон для запроса в БД
+    :param args: аргументы для вставки в шаблон запроса
+    :return: None
+    """
+    connection = get_db_session()
+    if not connection:
+        return
+
+    with Lock():
+        with connection as conn:
+            cursor = conn.cursor()
+            cursor.executemany(query_template, args[0])
