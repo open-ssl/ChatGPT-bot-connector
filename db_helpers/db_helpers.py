@@ -1,6 +1,13 @@
+from datetime import datetime
 from time import time as now_time
-from helpers.database import fetch_data_from_db, insert_data_in_db
+from helpers.database import (
+    fetch_data_from_db,
+    insert_data_in_db,
+    update_many_data_in_db
+)
 from helpers.helpers import (
+    DEFAULT_LOCAL_ZONE,
+    TIME_MASK,
     SubscriptionStatus,
     Const,
     Config,
@@ -58,7 +65,7 @@ def create_new_user_in_db(message) -> bool:
             user_id, first_name, last_name, username, language, temperature
         )
         insert_data_in_db(sql_templates.INSERT_NEW_SUB_INFO_IN_DB_TEMPLATE, user_id, Config.DEFAULT_TOKENS_COUNT)
-    except Exception as e:
+    except Exception as _:
         log_error_in_file()
         operation_result = False
 
@@ -131,17 +138,18 @@ def get_text_for_profile(user_id, locale_object):
     :return:
     """
     base_profile_text = locale_object.MY_PROFILE_TEXT
+    has_user_sub, tokens_count, expired_at = get_subcription_state_for_user(user_id)
 
-    activity_and_tokens_info = fetch_data_from_db(sql_templates.GET_ACTIVITY_AND_TOKENS_FOR_USER, user_id)
-    tokens = int(activity_and_tokens_info.get(Const.TOKENS))
-
-    if is_subscription_active_for_user(user_id):
-        # todo получить дату истечения подписки
-        base_profile_text += locale_object.MY_PROFILE_INFO_WITH_SUB_TEXT
+    if has_user_sub:
+        # todo убрать кнопку купить подписку если она уже куплена
+        date_timestamp = get_timestamp_from_datetime(expired_at)
+        datetime_obj = datetime.fromtimestamp(date_timestamp).astimezone()
+        expired_at = datetime_obj.astimezone(DEFAULT_LOCAL_ZONE).strftime(TIME_MASK) + ' (UTC+2)'
+        base_profile_text += locale_object.MY_PROFILE_INFO_WITH_SUB_TEXT.format(expired_at)
     else:
         # получить количество оставшихся токенов
-        tokens = tokens if tokens > 0 else 0
-        base_profile_text += locale_object.MY_PROFILE_INFO_NOT_SUB_TEXT.format(tokens)
+        tokens_count = tokens_count if tokens_count > 0 else 0
+        base_profile_text += locale_object.MY_PROFILE_INFO_NOT_SUB_TEXT.format(tokens_count)
 
     return base_profile_text
 
@@ -195,10 +203,24 @@ def is_subscription_active_for_user(user_id):
     return True
 
 
+def get_subcription_state_for_user(user_id):
+    """
+    Проверка статуса подписки у пользователя
+    :param user_id: идентификатор пользователя
+    :return:
+    """
+    user_info = fetch_data_from_db(sql_templates.GET_INFO_FOR_USER_TEMPLATE, user_id)
+    activity_status = user_info.get(Const.ACTIVITY_STATUS)
+    tokens_count = int(user_info.get(Const.TOKENS))
+    expired_at = user_info.get(Const.EXPIRED_AT)
+    return activity_status, tokens_count, expired_at
+
+
 def set_unactive_subscription_for_user(user_id):
     """
-    Устанавливаем подписку пользользователя в неактивное состояние
-    :return:
+    Устанавливаем подписку пользователя в неактивное состояние
+    :param user_id: идентификатор пользователя
+    :return: None
     """
     insert_data_in_db(
         sql_templates.UPDATE_SUBSCRIPTION_STATUS_FOR_USER_TEMPLATE, SubscriptionStatus.UNACTIVE, 0, user_id
@@ -208,10 +230,12 @@ def set_unactive_subscription_for_user(user_id):
 def set_active_subscription_for_user(user_id):
     """
     Устанавливаем активное состояние подписки для пользователя
-    :param user_id:
-    :return:
+    :param user_id: идентификатор пользователя
+    :return: None
     """
     insert_data_in_db(
-        sql_templates.UPDATE_SUBSCRIPTION_STATUS_FOR_USER_TEMPLATE, SubscriptionStatus.ACTIVE, Config.DEFAULT_TOKENS_COUNT, user_id
+        sql_templates.UPDATE_SUBSCRIPTION_STATUS_FOR_USER_TEMPLATE,
+        SubscriptionStatus.ACTIVE, Config.DEFAULT_TOKENS_COUNT,
+        user_id
     )
 

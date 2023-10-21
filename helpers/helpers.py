@@ -1,6 +1,7 @@
 import sys
 import ciso8601
 from datetime import date, datetime
+from dateutil.tz import gettz
 from telebot import types
 from time import mktime
 
@@ -14,6 +15,10 @@ from requests_futures import sessions
 from locales.ru.locale import BotMessage as BotMessageRu
 from locales.en.locale import BotMessage as BotMessageEn
 from locales.main import get_unique_methods
+
+
+DEFAULT_LOCAL_ZONE = gettz('Etc/GMT-2')
+TIME_MASK = "%H:%M %d/%h"
 
 
 class Locale:
@@ -378,7 +383,7 @@ def help_command_validator(text) -> bool:
     :return:
     """
     return text.html_text in [
-        BotCommands.HELP, BotMessageRu.HELP, f'/{BotCommands.HELP}'
+        BotCommands.HELP, BotMessageRu.HELP, BotMessageEn.HELP, f'/{BotCommands.HELP}'
     ]
 
 

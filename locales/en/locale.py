@@ -2,8 +2,9 @@ class BotMessage:
     """
     Английские тексты сообщений при нажатии на команды
     """
-    START_TEXT = 'Hello, {}!\nUse Chat GPT in Telegram!'
-    START_COMMON_TEXT = 'Hello!\nUse Chat GPT in Telegram!'
+    START_TEXT = 'Hello, {}!\n\nUse Chat GPT in Telegram!'
+    START_COMMON_TEXT = 'Hello!\n\nUse Chat GPT in Telegram!'
+    ABOUT_START_TEXT = '\n\nLearn info about this bot: /about'
     MAIN_MENU_TEXT = 'Edit your profile and start to chat with Chat GPT'
     HELP = 'Help'
     ABOUT = 'About bot'
@@ -38,7 +39,7 @@ class BotMessage:
                      "This bot uses ChatGPT-3.5-turbo language model that was created by OpenAI company\n\n" \
                      "Your dialog directs to model by closed API connection, that protects total security of your " \
                      "data\n\nNevertheless please, don't use sensetive data during work with bot\n\n" \
-                     "If you got some errors you could write to author of this bot with command /help for any details"
+                     "If you got some errors you could write to author of this bot\nwith command /help for any details"
     WAITING_ANSWER_FROM_GPT = "\nWaiting answer from Chat GPT\n"
     ANSWER_FROM_GPT = "Answer from Chat GPT:\n\n"
     ANOTHER_QUESTION = "\n\nYou can ask another one querstion right in this dialog\n" \

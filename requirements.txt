@@ -3,6 +3,7 @@ ciso8601
 requests_futures
 pytelegrambotapi
 pymemcache
+python-dateutil
 gunicorn
 openai
 alembic
